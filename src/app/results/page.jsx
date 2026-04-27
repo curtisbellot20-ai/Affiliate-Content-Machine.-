@@ -122,6 +122,9 @@ export default function ResultsPage() {
             </p>
           </div>
           <ExportButtons campaign={campaign} />
+          <Link href="/video" className="btn btn-secondary" style={{ textDecoration: "none", fontSize: 13 }}>
+            🎬 Make Video
+          </Link>
         </div>
 
         {/* Sections */}
