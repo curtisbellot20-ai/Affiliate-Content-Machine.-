@@ -107,9 +107,26 @@ export async function scrapeProduct(url) {
 
   const image = images[0] || "";
 
+  // Reviews — Amazon top customer reviews (present in initial HTML on some pages)
+  const reviews = [];
+  $('[data-hook="review"]').each((_, el) => {
+    if (reviews.length >= 6) return;
+    const rating = $(el).find('[data-hook="review-star-rating"] .a-icon-alt').first().text().replace(/[^0-9.]/g, "").trim();
+    const title = $(el).find('[data-hook="review-title"] span:not(.a-icon-alt)').first().text().trim();
+    const text = $(el).find('[data-hook="review-body"] span').first().text().replace(/\s+/g, " ").trim().slice(0, 400);
+    if (text.length > 30) reviews.push({ rating, title, text });
+  });
+  if (reviews.length === 0) {
+    $('[class*="review-body"], [class*="review-content"], [itemprop="reviewBody"]').each((_, el) => {
+      if (reviews.length >= 6) return;
+      const text = $(el).text().replace(/\s+/g, " ").trim().slice(0, 400);
+      if (text.length > 30) reviews.push({ rating: "", title: "", text });
+    });
+  }
+
   // Grab meaningful body text (exclude nav/footer/script)
   $("nav, footer, script, style, noscript, header").remove();
   const body = $("body").text().replace(/\s+/g, " ").trim().slice(0, 3000);
 
-  return { title: title.trim(), description: description.trim(), price: price.trim(), image: image.trim(), images, body, url };
+  return { title: title.trim(), description: description.trim(), price: price.trim(), image: image.trim(), images, body, reviews, url };
 }

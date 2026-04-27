@@ -51,6 +51,12 @@ export async function generateContent({ product, niche, audience, tone }) {
   const Anthropic = (await import("@anthropic-ai/sdk")).default;
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
+  const reviewsText = (product?.reviews || []).length > 0
+    ? (product.reviews).map((r, i) =>
+        `Review ${i + 1}${r.rating ? ` (${r.rating}★)` : ""}${r.title ? ` — "${r.title}"` : ""}:\n"${r.text}"`
+      ).join("\n\n")
+    : "No reviews available.";
+
   const productContext = `
 Product Title: ${product?.title || "Unknown Product"}
 Description: ${product?.description || ""}
@@ -60,6 +66,9 @@ Page content excerpt: ${product?.body?.slice(0, 1500) || ""}
 Niche: ${niche || "general"}
 Target Audience: ${audience || "general consumers"}
 Content Tone: ${tone || "conversational"}
+
+Customer Reviews:
+${reviewsText}
 `.trim();
 
   const prompt = `You are an expert affiliate marketer and content strategist. Based on the product details below, generate a complete affiliate content campaign.
@@ -110,10 +119,11 @@ Requirements:
   5. Personal Story — narrative of how the product fit into daily life
   6. Comparison — this product vs common alternatives or old way of doing things
   7. Tutorial/How-To — step-by-step walkthrough of using it
-  8. Testimonial-style — written as if sharing a real customer result
+  8. Testimonial-style — based on real customer reviews if provided; quote specific results or phrases from them
   9. FOMO/Urgency — trending, selling fast, or limited availability angle
   10. Myth-busting — correct a common misconception about the product or niche
-  Each script must have a unique title reflecting its angle. No two scripts should have the same hook, body, or structure.
+  Each script must have a unique title reflecting its angle. No two scripts should share the same hook, body, or structure.
+  Scripts 5 (Personal Story) and 8 (Testimonial) MUST borrow specific language, results, or details from the Customer Reviews if any are provided.
 - pinterestPins: exactly 5 pins
 - influencerPrompts: exactly 5 prompts
 - emails: exactly 3 emails
