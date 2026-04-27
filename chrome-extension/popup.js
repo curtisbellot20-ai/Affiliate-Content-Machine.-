@@ -40,8 +40,12 @@ function showResult(product) {
 
   document.getElementById("product-title").textContent = product.title || "Unknown product";
   document.getElementById("product-price").textContent = product.price || "";
+  const reviewCount = (product.reviews || []).length;
   document.getElementById("img-count").textContent =
-    imgs.length > 0 ? `${imgs.length} image${imgs.length !== 1 ? "s" : ""} found` : "No images found";
+    [
+      imgs.length > 0 ? `${imgs.length} image${imgs.length !== 1 ? "s" : ""}` : "No images",
+      reviewCount > 0 ? `${reviewCount} review${reviewCount !== 1 ? "s" : ""}` : "No reviews",
+    ].join(" · ");
 
   setState("result");
 }
@@ -155,6 +159,32 @@ function scrapePageDOM() {
     .slice(0, 12);
 
   result.image = result.images[0] || ogImage || "";
+
+  // ---- Review scraping ----
+  const reviews = [];
+
+  // Amazon: data-hook="review" containers (shown in "Top customer reviews" section)
+  document.querySelectorAll('[data-hook="review"]').forEach((el) => {
+    if (reviews.length >= 6) return;
+    const ratingEl = el.querySelector('[data-hook="review-star-rating"] .a-icon-alt, [data-hook="cmps-review-star-rating"] .a-icon-alt');
+    const titleEl = el.querySelector('[data-hook="review-title"] span:not(.a-icon-alt)');
+    const bodyEl = el.querySelector('[data-hook="review-body"] span');
+    const rating = ratingEl ? ratingEl.textContent.replace(/[^0-9.]/g, "").trim() : "";
+    const title = titleEl ? titleEl.textContent.trim() : "";
+    const text = bodyEl ? bodyEl.textContent.replace(/\s+/g, " ").trim().slice(0, 400) : "";
+    if (text.length > 30) reviews.push({ rating, title, text });
+  });
+
+  // Generic fallback for non-Amazon sites
+  if (reviews.length === 0) {
+    document.querySelectorAll('[class*="review-body"], [class*="review-content"], [class*="review-text"], [itemprop="reviewBody"]').forEach((el) => {
+      if (reviews.length >= 6) return;
+      const text = el.textContent.replace(/\s+/g, " ").trim().slice(0, 400);
+      if (text.length > 30) reviews.push({ rating: "", title: "", text });
+    });
+  }
+
+  result.reviews = reviews;
   return result;
 }
 

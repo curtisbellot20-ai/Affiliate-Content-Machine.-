@@ -7,7 +7,13 @@ export default function BlogPostSection({ post }) {
   const [view, setView] = useState("rendered");
   if (!post) return null;
 
-  const fullText = `Title: ${post.title}\nMeta: ${post.metaDescription}\n\n${post.content}`;
+  const fullText = [
+    `Title: ${post.title}`,
+    post.seoTitles?.length ? `SEO Titles:\n${post.seoTitles.map((t, i) => `${i + 1}. ${t}`).join("\n")}` : "",
+    `Meta: ${post.metaDescription}`,
+    post.intro ? `\nIntro:\n${post.intro}` : "",
+    `\n${post.content}`,
+  ].filter(Boolean).join("\n");
 
   const rendered = post.content
     ?.split("\n")
@@ -36,6 +42,28 @@ export default function BlogPostSection({ post }) {
           <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--text-muted)", fontWeight: 600, marginBottom: 8 }}>Meta Description</div>
           <div style={{ color: "var(--text-muted)", fontSize: 14 }}>{post.metaDescription}</div>
         </div>
+
+        {post.seoTitles?.length > 0 && (
+          <div style={{ marginBottom: 20, paddingBottom: 20, borderBottom: "1px solid var(--border)" }}>
+            <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--text-muted)", fontWeight: 600, marginBottom: 10 }}>SEO Title Variations</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {post.seoTitles.map((t, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)", minWidth: 18 }}>{i + 1}.</span>
+                  <span style={{ fontSize: 14, color: "var(--text)", flex: 1 }}>{t}</span>
+                  <CopyButton text={t} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {post.intro && (
+          <div style={{ marginBottom: 20, paddingBottom: 20, borderBottom: "1px solid var(--border)" }}>
+            <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--text-muted)", fontWeight: 600, marginBottom: 8 }}>Blog Intro</div>
+            <p style={{ color: "var(--text-muted)", fontSize: 14, lineHeight: 1.8 }}>{post.intro}</p>
+          </div>
+        )}
 
         <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
           {["rendered", "raw"].map((v) => (
