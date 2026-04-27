@@ -111,30 +111,81 @@ Return a valid JSON object (no markdown, no code fences) with EXACTLY this struc
 }
 
 Requirements:
-- videoScripts: exactly 10 scripts, each using a DIFFERENT angle in this order:
-  1. Problem/Solution — open with a relatable pain point the product solves
-  2. Unboxing/First Impression — excitement of receiving and opening it
-  3. Before & After — transformation story, life before vs after using it
-  4. Top 5 Reasons — listicle format, "5 reasons you need this"
-  5. Personal Story — narrative of how the product fit into daily life
-  6. Comparison — this product vs common alternatives or old way of doing things
-  7. Tutorial/How-To — step-by-step walkthrough of using it
-  8. Testimonial-style — based on real customer reviews if provided; quote specific results or phrases from them
-  9. FOMO/Urgency — trending, selling fast, or limited availability angle
-  10. Myth-busting — correct a common misconception about the product or niche
-  Each script must have a unique title reflecting its angle. No two scripts should share the same hook, body, or structure.
-  Scripts 5 (Personal Story) and 8 (Testimonial) MUST borrow specific language, results, or details from the Customer Reviews if any are provided.
 - pinterestPins: exactly 5 pins
 - influencerPrompts: exactly 5 prompts
 - emails: exactly 3 emails
 - sms: exactly 3 messages
 - Tone: ${tone}
 - Use "AFFILIATE_LINK" as placeholder for the affiliate URL
-- Make all content specific to this product, not generic`;
+- Make all content specific to this product, not generic
+
+CRITICAL — VIDEO SCRIPTS: Write exactly 10 scripts. They must be STRUCTURALLY different — different sentence patterns, different formats, not just different topics. Follow these exact formats for each:
+
+Script 1 — Problem/Solution
+  title: "Problem/Solution: [specific problem]"
+  hook: A direct frustrated question or relatable complaint. e.g. "Still dealing with [specific problem]? There's finally a fix."
+  body: Name the exact problem → introduce the product as the answer → give ONE specific before/after result. Prose format.
+  cta: Action-focused, references fixing the problem.
+
+Script 2 — Unboxing/First Impression
+  title: "Unboxing: My First Reaction"
+  hook: First-person excitement of receiving it. e.g. "My [product] just arrived and I am obsessed."
+  body: Describe what's in the packaging, the first thing you notice, and one immediate wow moment. First-person present tense.
+  cta: "Get yours — link in bio."
+
+Script 3 — Before & After
+  title: "Before & After: [result]"
+  hook: Two-line contrast — "Before [product]: [negative state]. After: [positive state]."
+  body: Paint the before picture with 2 specific details, then the after with 2 specific improvements. Use vivid contrast.
+  cta: Transformation-focused CTA.
+
+Script 4 — Top 5 Reasons
+  title: "Top 5 Reasons to Get [product]"
+  hook: "5 reasons [product] is the only [category] you'll ever need:"
+  body: NUMBERED LIST FORMAT — write exactly: "1. [reason + detail]. 2. [reason + detail]. 3. [reason + detail]. 4. [reason + detail]. 5. [reason + detail]."
+  cta: "Which reason got you? Link in bio."
+
+Script 5 — Personal Story
+  title: "My Honest Story with [product]"
+  hook: "Real talk — here's what actually happened when I started using [product]."
+  body: First-person narrative with a specific moment or turning point, an emotional beat, and a tangible result. Use customer review language if reviews were provided.
+  cta: "Don't wait like I did — link in bio."
+
+Script 6 — Comparison
+  title: "[Old way] vs [product]: No Contest"
+  hook: "[Old solution] vs [product] — I'm never going back."
+  body: At least 2 side-by-side comparisons using "Old way: ... New way: ..." or "Before: ... Now: ..." structure. Include cost, time, or effort angle.
+  cta: "Make the switch — link in bio."
+
+Script 7 — Tutorial / How-To
+  title: "How to Get [result] with [product]"
+  hook: "Here's exactly how I use [product] to get [specific result] every single time:"
+  body: STEP FORMAT — write exactly: "Step 1: [action]. Step 2: [action]. Step 3: [action]. That's it."
+  cta: "Try it yourself — link in bio."
+
+Script 8 — Testimonial
+  title: "What Customers Are Saying About [product]"
+  hook: An actual customer quote in quotation marks — use real review text if provided, otherwise write a realistic paraphrased quote.
+  body: Validate the quote with a second detail, mention star rating if available, add one more customer result.
+  cta: "Join them — link in bio."
+
+Script 9 — FOMO / Urgency
+  title: "Why Everyone Is Talking About [product]"
+  hook: Social pressure opener. e.g. "Everyone in [niche] is getting [product] and I finally understand why."
+  body: Why it's trending right now, what you're missing by waiting, social proof angle with numbers or viral framing.
+  cta: "Don't be the last to know — link in bio."
+
+Script 10 — Myth-Busting
+  title: "The Biggest Myth About [niche/product]"
+  hook: State a common WRONG belief as a myth. e.g. "Everyone thinks [myth] — but that's completely wrong."
+  body: "The truth is…" — debunk the myth with a specific fact or result, position the product as the proof.
+  cta: "Get the truth — and the product — link in bio."
+
+Each script title must clearly reflect its angle. Hooks must NOT all start with "I" or all be questions — vary the sentence structure.`;
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 8192,
+    max_tokens: 16000,
     messages: [{ role: "user", content: prompt }],
   });
 
