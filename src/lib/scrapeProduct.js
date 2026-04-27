@@ -36,36 +36,45 @@ export async function scrapeProduct(url) {
   // Try to extract multiple images from Amazon's colorImages JSON in script tags
   let images = [];
 
-  $("script").each((_, el) => {
-    const content = $(el).children().first().text() || "";
-    const match = content.match(/'colorImages'\s*:\s*\{\s*'initial'\s*:\s*(\[[\s\S]*?\])\s*\}/);
-    if (match && images.length === 0) {
-      try {
-        const parsed = JSON.parse(match[1]);
-        images = parsed
-          .map((img) => img.hiRes || img.large || img.mainUrl)
-          .filter(Boolean);
-      } catch {}
-    }
-  });
+  // Method 1: data-a-dynamic-image attribute (most reliable for Amazon)
+  const dynamicImages = $("#landingImage").attr("data-a-dynamic-image");
+  if (dynamicImages) {
+    try {
+      const imgMap = JSON.parse(dynamicImages);
+      images = Object.keys(imgMap);
+    } catch {}
+  }
 
-  // Fallback: extract from #altImages thumbnails and convert to full-size URLs
+  // Method 2: colorImages JSON in script tags
   if (images.length === 0) {
-    $("#altImages img, #imageBlock img").each((_, el) => {
+    $("script").each((_, el) => {
+      const content = $(el).html() || "";
+      const match = content.match(/'colorImages'\s*:\s*\{\s*'initial'\s*:\s*(\[[\s\S]*?\])/);
+      if (match && images.length === 0) {
+        try {
+          const parsed = JSON.parse(match[1]);
+          images = parsed.map((img) => img.hiRes || img.large).filter(Boolean);
+        } catch {}
+      }
+    });
+  }
+
+  // Method 3: extract from #altImages thumbnails and convert to full-size URLs
+  if (images.length === 0) {
+    $("#altImages img").each((_, el) => {
       const src = $(el).attr("src") || "";
       const fullSize = src.replace(/\._[A-Z0-9,_]+_\./i, ".");
-      if (fullSize && fullSize.includes("media-amazon") && !fullSize.includes("sprite")) {
+      if (fullSize.includes("media-amazon") && !fullSize.includes("sprite") && !fullSize.includes("transparent")) {
         images.push(fullSize);
       }
     });
   }
 
-  // Fallback: single main image
+  // Method 4: single main image fallback
   if (images.length === 0) {
     const single =
       $("#landingImage").attr("data-old-hires") ||
       $("#landingImage").attr("src") ||
-      $("#imgBlkFront").attr("data-old-hires") ||
       $('meta[property="og:image"]').attr("content") ||
       $('meta[name="twitter:image"]').attr("content") ||
       "";
