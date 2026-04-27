@@ -1,9 +1,11 @@
 export async function scrapeProduct(url) {
   const res = await fetch(url, {
     headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; AffiliateCM/1.0)",
-      Accept: "text/html",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
     },
+    redirect: "follow",
     signal: AbortSignal.timeout(10000),
   });
 
@@ -31,11 +33,20 @@ export async function scrapeProduct(url) {
     $('[itemprop="price"]').attr("content") ||
     "";
 
+  // Amazon-specific: grab high-res image from the main product image element
+  const amazonImg =
+    $("#landingImage").attr("data-old-hires") ||
+    $("#landingImage").attr("src") ||
+    $("#imgBlkFront").attr("data-old-hires") ||
+    $("#imgBlkFront").attr("src") ||
+    $("img[data-old-hires]").first().attr("data-old-hires") ||
+    $('[id="main-image"]').attr("src");
+
   const image =
+    amazonImg ||
     $('meta[property="og:image"]').attr("content") ||
     $('meta[name="twitter:image"]').attr("content") ||
     $('img[class*="product"]').first().attr("src") ||
-    $("img").first().attr("src") ||
     "";
 
   // Grab meaningful body text (exclude nav/footer/script)
