@@ -1,11 +1,12 @@
 import CopyButton from "./CopyButton";
+import OpenInButton from "./OpenInButton";
 
-export default function CaptionsHashtagsSection({ captions }) {
+export default function CaptionsHashtagsSection({ captions, productImage }) {
   if (!captions) return null;
 
   const platforms = [
-    { key: "instagram", label: "Instagram", icon: "📸" },
-    { key: "tiktok", label: "TikTok", icon: "🎵" },
+    { key: "instagram", label: "Instagram", icon: "📸", canvaUrl: "https://www.canva.com/create/instagram-posts/" },
+    { key: "tiktok", label: "TikTok", icon: "🎵", capCutUrl: "https://www.capcut.com/", canvaUrl: "https://www.canva.com/create/tiktok-videos/" },
     { key: "twitter", label: "X / Twitter", icon: "🐦" },
   ];
 
@@ -15,14 +16,28 @@ export default function CaptionsHashtagsSection({ captions }) {
         <span>📱</span> Captions & Hashtags
       </div>
 
+      {productImage && (
+        <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)" }}>
+          <img src={productImage} alt="Product" style={{ width: 56, height: 56, objectFit: "contain", borderRadius: 6, background: "#fff", flexShrink: 0 }} onError={(e) => { e.target.style.display = "none"; }} />
+          <span style={{ fontSize: 13, color: "var(--text-muted)" }}>Use this product image in your posts when designing in Canva</span>
+        </div>
+      )}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {platforms.map(({ key, label, icon }) => (
+        {platforms.map(({ key, label, icon, canvaUrl, capCutUrl }) => (
           <div key={key} className="card">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
               <div style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
                 <span>{icon}</span> {label}
               </div>
-              <CopyButton text={captions[key] || ""} />
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                <CopyButton text={captions[key] || ""} />
+                {canvaUrl && (
+                  <OpenInButton text={captions[key] || ""} url={canvaUrl} label="Canva" icon="🎨" />
+                )}
+                {capCutUrl && (
+                  <OpenInButton text={captions[key] || ""} url={capCutUrl} label="CapCut" icon="🎬" />
+                )}
+              </div>
             </div>
             <p style={{ color: "var(--text-muted)", fontSize: 14, lineHeight: 1.8 }}>{captions[key]}</p>
           </div>

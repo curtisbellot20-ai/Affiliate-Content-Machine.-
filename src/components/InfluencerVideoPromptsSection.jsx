@@ -1,4 +1,5 @@
 import CopyButton from "./CopyButton";
+import OpenInButton from "./OpenInButton";
 
 export default function InfluencerVideoPromptsSection({ prompts }) {
   if (!prompts?.length) return null;
@@ -24,7 +25,21 @@ export default function InfluencerVideoPromptsSection({ prompts }) {
                   {prompt.duration}
                 </span>
               </div>
-              <CopyButton text={`${prompt.angle}\n${prompt.duration}\n\n${prompt.script}`} />
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                <CopyButton text={`${prompt.angle}\n${prompt.duration}\n\n${prompt.script}`} />
+                <OpenInButton
+                  text={`${prompt.angle}\n${prompt.duration}\n\n${prompt.script}`}
+                  url="https://www.capcut.com/"
+                  label="CapCut"
+                  icon="🎬"
+                />
+                <OpenInButton
+                  text={`${prompt.angle}\n${prompt.duration}\n\n${prompt.script}`}
+                  url="https://www.canva.com/create/tiktok-videos/"
+                  label="Canva"
+                  icon="🎨"
+                />
+              </div>
             </div>
             <p style={{ color: "var(--text-muted)", fontSize: 14, lineHeight: 1.7 }}>{prompt.script}</p>
           </div>

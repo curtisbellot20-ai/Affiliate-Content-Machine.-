@@ -122,6 +122,9 @@ export default function ResultsPage() {
             </p>
           </div>
           <ExportButtons campaign={campaign} />
+          <Link href="/video" className="btn btn-secondary" style={{ textDecoration: "none", fontSize: 13 }}>
+            🎬 Make Video
+          </Link>
         </div>
 
         {/* Sections */}
@@ -135,7 +138,7 @@ export default function ResultsPage() {
           </section>
 
           <section id="pinterest" style={{ paddingTop: 64 }}>
-            <PinterestPinsSection pins={campaign.pinterestPins} />
+            <PinterestPinsSection pins={campaign.pinterestPins} productImage={campaign.product?.image} />
           </section>
 
           <section id="influencer" style={{ paddingTop: 64 }}>
@@ -151,7 +154,7 @@ export default function ResultsPage() {
           </section>
 
           <section id="captions" style={{ paddingTop: 64 }}>
-            <CaptionsHashtagsSection captions={campaign.captions} />
+            <CaptionsHashtagsSection captions={campaign.captions} productImage={campaign.product?.image} />
           </section>
         </div>
       </div>

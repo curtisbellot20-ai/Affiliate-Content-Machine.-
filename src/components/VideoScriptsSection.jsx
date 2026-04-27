@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import CopyButton from "./CopyButton";
+import OpenInButton from "./OpenInButton";
 
 function scriptText(s) {
   return `HOOK:\n${s.hook}\n\nBODY:\n${s.body}\n\nCTA:\n${s.cta}`;
@@ -44,8 +45,20 @@ export default function VideoScriptsSection({ scripts }) {
             </button>
             {open === i && (
               <div style={{ padding: "0 20px 20px", borderTop: "1px solid var(--border)" }}>
-                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12, marginBottom: 16 }}>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 12, marginBottom: 16, flexWrap: "wrap" }}>
                   <CopyButton text={scriptText(script)} />
+                  <OpenInButton
+                    text={scriptText(script)}
+                    url="https://www.capcut.com/"
+                    label="CapCut"
+                    icon="🎬"
+                  />
+                  <OpenInButton
+                    text={scriptText(script)}
+                    url="https://www.canva.com/create/tiktok-videos/"
+                    label="Canva"
+                    icon="🎨"
+                  />
                 </div>
                 <div style={{ marginBottom: 16 }}>
                   <div style={{ fontWeight: 700, fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--accent-light)", marginBottom: 8 }}>Hook</div>
