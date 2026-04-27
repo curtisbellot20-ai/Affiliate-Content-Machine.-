@@ -102,7 +102,18 @@ Return a valid JSON object (no markdown, no code fences) with EXACTLY this struc
 }
 
 Requirements:
-- videoScripts: exactly 10 scripts
+- videoScripts: exactly 10 scripts, each using a DIFFERENT angle in this order:
+  1. Problem/Solution — open with a relatable pain point the product solves
+  2. Unboxing/First Impression — excitement of receiving and opening it
+  3. Before & After — transformation story, life before vs after using it
+  4. Top 5 Reasons — listicle format, "5 reasons you need this"
+  5. Personal Story — narrative of how the product fit into daily life
+  6. Comparison — this product vs common alternatives or old way of doing things
+  7. Tutorial/How-To — step-by-step walkthrough of using it
+  8. Testimonial-style — written as if sharing a real customer result
+  9. FOMO/Urgency — trending, selling fast, or limited availability angle
+  10. Myth-busting — correct a common misconception about the product or niche
+  Each script must have a unique title reflecting its angle. No two scripts should have the same hook, body, or structure.
 - pinterestPins: exactly 5 pins
 - influencerPrompts: exactly 5 prompts
 - emails: exactly 3 emails
