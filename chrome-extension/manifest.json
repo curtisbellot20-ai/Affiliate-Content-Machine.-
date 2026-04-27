@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "ACM Product Scraper",
+  "version": "1.0",
+  "description": "Scrape product info and images from any affiliate page, then generate content in ACM.",
+  "permissions": ["activeTab", "scripting", "clipboardWrite"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}

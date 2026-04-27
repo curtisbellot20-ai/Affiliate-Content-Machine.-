@@ -41,56 +41,70 @@ export async function scrapeProduct(url) {
     $('[itemprop="price"]').attr("content") ||
     "";
 
-  // Try to extract multiple images from Amazon's colorImages JSON in script tags
-  let images = [];
-
-  // Method 1: data-a-dynamic-image on any element (most reliable for Amazon)
+  // Step 1: get main image at highest resolution from data-a-dynamic-image
+  let mainImages = [];
   $("[data-a-dynamic-image]").each((_, el) => {
-    if (images.length > 0) return;
+    if (mainImages.length > 0) return;
     try {
       const imgMap = JSON.parse($(el).attr("data-a-dynamic-image") || "{}");
-      images = Object.keys(imgMap).filter(Boolean);
+      const byId = {};
+      for (const [imgUrl, dims] of Object.entries(imgMap)) {
+        const idMatch = imgUrl.match(/\/images\/I\/([A-Za-z0-9+]+)\./);
+        if (!idMatch) continue;
+        const id = idMatch[1];
+        const res = (dims[0] || 0) * (dims[1] || 0);
+        if (!byId[id] || res > byId[id].res) byId[id] = { url: imgUrl, res };
+      }
+      mainImages = Object.values(byId).map((v) => v.url).filter(Boolean);
     } catch {}
   });
 
-  // Method 2: colorImages JSON in script tags
-  if (images.length === 0) {
+  // Step 2: always grab all sidebar thumbnails and convert to full-size
+  const altImages = [];
+  $("#altImages img, #imageBlock img, .imageThumbnail img").each((_, el) => {
+    const src = $(el).attr("src") || $(el).attr("data-src") || "";
+    if (!src.includes("media-amazon")) return;
+    if (src.includes("sprite") || src.includes("transparent") || src.includes("gif")) return;
+    const fullSize = src.replace(/\._[A-Z0-9,_]+_\./i, ".");
+    if (fullSize) altImages.push(fullSize);
+  });
+
+  // Step 3: from colorImages JSON in scripts
+  const scriptImages = [];
+  if (mainImages.length === 0 && altImages.length === 0) {
     $("script").each((_, el) => {
       const content = $(el).html() || "";
       const match = content.match(/'colorImages'\s*:\s*\{\s*'initial'\s*:\s*(\[[\s\S]*?\])/);
-      if (match && images.length === 0) {
+      if (match && scriptImages.length === 0) {
         try {
           const parsed = JSON.parse(match[1]);
-          images = parsed.map((img) => img.hiRes || img.large).filter(Boolean);
+          parsed.forEach((img) => { if (img.hiRes || img.large) scriptImages.push(img.hiRes || img.large); });
         } catch {}
       }
     });
   }
 
-  // Method 3: extract from alt image thumbnails and convert to full-size URLs
-  if (images.length === 0) {
-    $("img").each((_, el) => {
-      const src = $(el).attr("src") || $(el).attr("data-src") || "";
-      if (!src.includes("media-amazon")) return;
-      if (src.includes("sprite") || src.includes("transparent") || src.includes("pixel")) return;
-      const fullSize = src.replace(/\._[A-Z0-9,_]+_\./i, ".");
-      if (fullSize) images.push(fullSize);
-    });
+  // Combine all, deduplicate by image ID, keep highest res first
+  const allRaw = [...mainImages, ...altImages, ...scriptImages];
+  const seenIds = new Set();
+  const images = [];
+  for (const imgUrl of allRaw) {
+    const idMatch = imgUrl.match(/\/images\/I\/([A-Za-z0-9+]+)\./);
+    const id = idMatch ? idMatch[1] : imgUrl;
+    if (!seenIds.has(id)) {
+      seenIds.add(id);
+      images.push(imgUrl);
+    }
   }
 
-  // Method 4: single main image fallback
+  // Final fallback: og:image
   if (images.length === 0) {
     const single =
-      $("#landingImage").attr("data-old-hires") ||
-      $("#landingImage").attr("src") ||
       $('meta[property="og:image"]').attr("content") ||
-      $('meta[name="twitter:image"]').attr("content") ||
-      "";
+      $('meta[name="twitter:image"]').attr("content") || "";
     if (single) images.push(single);
   }
 
-  // Dedupe and limit to 8
-  images = [...new Set(images.filter(Boolean))].slice(0, 8);
   const image = images[0] || "";
 
   // Grab meaningful body text (exclude nav/footer/script)
