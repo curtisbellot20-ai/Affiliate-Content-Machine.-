@@ -233,8 +233,30 @@ Return a valid JSON object (no markdown, no code fences) with EXACTLY this struc
 }
 
 REQUIREMENTS:
-- hooks: exactly 10 standalone hooks — every one must open DIFFERENTLY: mix questions, confessions, warnings, POVs, statements, numbers. No two can start with the same word.
-- ctas: exactly 10 standalone CTAs — vary urgency levels: soft, medium, urgent, curiosity-based, social proof. No two can start with the same word.
+
+HOOKS — generate exactly 10. Each hook must be product-specific and use the forced angle below. No two hooks may share a similar opening structure.
+Hook 1 — Question angle: Open with a direct question to the target audience about their frustration or desire related to this product. Must name or clearly reference the product category.
+Hook 2 — Confession angle: Start with "I'll be honest —" then share a personal admission about the niche or a past mistake before this product.
+Hook 3 — Number/stat angle: Open with a specific number or statistic (real or illustrative) tied to the product's benefit or the problem it solves.
+Hook 4 — Problem callout angle: Start with "The problem with most [product category]..." and name the exact flaw this product fixes.
+Hook 5 — POV angle: Start with "POV: You just discovered" followed by a vivid scenario of using this specific product.
+Hook 6 — Secret/hidden angle: Start with "Nobody is talking about" followed by a specific lesser-known benefit or use case of this product.
+Hook 7 — Before/after tease angle: Open with a one-sentence contrast showing life before vs. after this product. Do NOT use the word "Before".
+Hook 8 — Audience callout angle: Start with "If you [describe a specific struggle the target audience has]," — make the struggle specific to this product's niche.
+Hook 9 — Test/experiment angle: Start with "I tried [product name or clear reference]" and tease a surprising or counter-intuitive result.
+Hook 10 — Urgency/FOMO angle: Open with a sense of missing out or a time-sensitive framing tied to a specific benefit of this product.
+
+CTAS — generate exactly 10. Each CTA must be product-specific and use the forced style below. No two CTAs may use the same verb to open.
+CTA 1 — Soft discovery: Gentle invitation to learn more. Start with "Find out".
+CTA 2 — Curiosity gap: Tease a specific benefit or result they'll only get by clicking. Start with "See".
+CTA 3 — Urgency: Create time or quantity pressure tied to the product. Start with "Grab".
+CTA 4 — Social proof: Reference that others are already using/loving it. Start with "Join".
+CTA 5 — Benefit-first: Lead with the specific outcome they'll get. Start with "Get".
+CTA 6 — Direct action: No fluff, just the action. Start with "Shop".
+CTA 7 — FOMO: Frame it as something they'll regret missing. Start with "Don't".
+CTA 8 — Personal/empathetic: Speak directly to their specific struggle. Start with "If".
+CTA 9 — Journey/transformation: Frame the click as starting a change. Start with "Start".
+CTA 10 — Value/savings angle: Highlight a deal, price, or ROI. Start with "Save" or a dollar/percent figure.
 
 VIDEO SCRIPTS — use EXACTLY these 10 frameworks in this exact order. Each has a FORCED hook opener that you must use as the literal start of the hook field:
 
