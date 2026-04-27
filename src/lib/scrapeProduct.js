@@ -49,7 +49,19 @@ export async function scrapeProduct(url) {
     if (images.length > 0) return;
     try {
       const imgMap = JSON.parse($(el).attr("data-a-dynamic-image") || "{}");
-      images = Object.keys(imgMap).filter(Boolean);
+      // imgMap keys are URLs, values are [width, height]
+      // Group by base image ID and keep highest resolution
+      const byId = {};
+      for (const [imgUrl, dims] of Object.entries(imgMap)) {
+        const idMatch = imgUrl.match(/\/images\/I\/([A-Za-z0-9+]+)\./);
+        if (!idMatch) continue;
+        const id = idMatch[1];
+        const res = (dims[0] || 0) * (dims[1] || 0);
+        if (!byId[id] || res > byId[id].res) {
+          byId[id] = { url: imgUrl, res };
+        }
+      }
+      images = Object.values(byId).map((v) => v.url).filter(Boolean);
     } catch {}
   });
 
