@@ -304,7 +304,7 @@ export default function VideoPage() {
     function animate() {
       const elapsed = (Date.now() - start) / 1000;
       setProgress(Math.min(elapsed / DURATION, 1));
-      drawFrame(ctx, elapsed, script, validImgs, campaign.product?.title);
+      drawFrame(ctx, elapsed, { ...script, body: script.voiceover || script.body }, validImgs, campaign.product?.title);
 
       if (elapsed < DURATION) {
         rafRef.current = requestAnimationFrame(animate);

@@ -16,6 +16,7 @@ export default function ProductResearchCard({ product, research }) {
     `Unique Selling Points:\n${research.uniqueSellingPoints?.map((u) => `- ${u}`).join("\n")}`,
     ``,
     `Competitor Gap: ${research.competitorGap}`,
+    research.emotionalAngle ? `\nEmotional Angle: ${research.emotionalAngle}` : "",
   ].join("\n");
 
   return (
@@ -87,6 +88,13 @@ export default function ProductResearchCard({ product, research }) {
           <div style={{ fontWeight: 700, marginBottom: 8, fontSize: 13, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--text-muted)" }}>Competitor Gap</div>
           <p style={{ color: "var(--text-muted)", fontSize: 14, lineHeight: 1.7 }}>{research.competitorGap}</p>
         </div>
+
+        {research.emotionalAngle && (
+          <div className="card" style={{ gridColumn: "1 / -1", borderColor: "rgba(108,99,255,0.3)", background: "var(--accent-dim)" }}>
+            <div style={{ fontWeight: 700, marginBottom: 8, fontSize: 13, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--accent-light)" }}>💜 Emotional Angle</div>
+            <p style={{ color: "var(--text)", fontSize: 14, lineHeight: 1.7 }}>{research.emotionalAngle}</p>
+          </div>
+        )}
       </div>
     </div>
   );
