@@ -33,25 +33,52 @@ export async function scrapeProduct(url) {
     $('[itemprop="price"]').attr("content") ||
     "";
 
-  // Amazon-specific: grab high-res image from the main product image element
-  const amazonImg =
-    $("#landingImage").attr("data-old-hires") ||
-    $("#landingImage").attr("src") ||
-    $("#imgBlkFront").attr("data-old-hires") ||
-    $("#imgBlkFront").attr("src") ||
-    $("img[data-old-hires]").first().attr("data-old-hires") ||
-    $('[id="main-image"]').attr("src");
+  // Try to extract multiple images from Amazon's colorImages JSON in script tags
+  let images = [];
 
-  const image =
-    amazonImg ||
-    $('meta[property="og:image"]').attr("content") ||
-    $('meta[name="twitter:image"]').attr("content") ||
-    $('img[class*="product"]').first().attr("src") ||
-    "";
+  $("script").each((_, el) => {
+    const content = $(el).children().first().text() || "";
+    const match = content.match(/'colorImages'\s*:\s*\{\s*'initial'\s*:\s*(\[[\s\S]*?\])\s*\}/);
+    if (match && images.length === 0) {
+      try {
+        const parsed = JSON.parse(match[1]);
+        images = parsed
+          .map((img) => img.hiRes || img.large || img.mainUrl)
+          .filter(Boolean);
+      } catch {}
+    }
+  });
+
+  // Fallback: extract from #altImages thumbnails and convert to full-size URLs
+  if (images.length === 0) {
+    $("#altImages img, #imageBlock img").each((_, el) => {
+      const src = $(el).attr("src") || "";
+      const fullSize = src.replace(/\._[A-Z0-9,_]+_\./i, ".");
+      if (fullSize && fullSize.includes("media-amazon") && !fullSize.includes("sprite")) {
+        images.push(fullSize);
+      }
+    });
+  }
+
+  // Fallback: single main image
+  if (images.length === 0) {
+    const single =
+      $("#landingImage").attr("data-old-hires") ||
+      $("#landingImage").attr("src") ||
+      $("#imgBlkFront").attr("data-old-hires") ||
+      $('meta[property="og:image"]').attr("content") ||
+      $('meta[name="twitter:image"]').attr("content") ||
+      "";
+    if (single) images.push(single);
+  }
+
+  // Dedupe and limit to 8
+  images = [...new Set(images.filter(Boolean))].slice(0, 8);
+  const image = images[0] || "";
 
   // Grab meaningful body text (exclude nav/footer/script)
   $("nav, footer, script, style, noscript, header").remove();
   const body = $("body").text().replace(/\s+/g, " ").trim().slice(0, 3000);
 
-  return { title: title.trim(), description: description.trim(), price: price.trim(), image: image.trim(), body, url };
+  return { title: title.trim(), description: description.trim(), price: price.trim(), image: image.trim(), images, body, url };
 }
