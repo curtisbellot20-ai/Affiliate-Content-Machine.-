@@ -31,9 +31,16 @@ export async function scrapeProduct(url) {
     $('[itemprop="price"]').attr("content") ||
     "";
 
+  const image =
+    $('meta[property="og:image"]').attr("content") ||
+    $('meta[name="twitter:image"]').attr("content") ||
+    $('img[class*="product"]').first().attr("src") ||
+    $("img").first().attr("src") ||
+    "";
+
   // Grab meaningful body text (exclude nav/footer/script)
   $("nav, footer, script, style, noscript, header").remove();
   const body = $("body").text().replace(/\s+/g, " ").trim().slice(0, 3000);
 
-  return { title: title.trim(), description: description.trim(), price: price.trim(), body, url };
+  return { title: title.trim(), description: description.trim(), price: price.trim(), image: image.trim(), body, url };
 }

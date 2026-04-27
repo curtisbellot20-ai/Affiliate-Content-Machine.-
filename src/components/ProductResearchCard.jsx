@@ -28,6 +28,16 @@ export default function ProductResearchCard({ product, research }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
         {product && (
           <div className="card">
+            {product.image && (
+              <div style={{ marginBottom: 16, borderRadius: "var(--radius-sm)", overflow: "hidden", background: "#fff", textAlign: "center" }}>
+                <img
+                  src={product.image}
+                  alt={product.title}
+                  style={{ maxWidth: "100%", maxHeight: 220, objectFit: "contain", display: "block", margin: "0 auto" }}
+                  onError={(e) => { e.target.style.display = "none"; }}
+                />
+              </div>
+            )}
             <div style={{ fontWeight: 700, marginBottom: 12, fontSize: 13, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--text-muted)" }}>Product Info</div>
             <div style={{ fontWeight: 600, marginBottom: 6 }}>{product.title}</div>
             {product.price && <div style={{ color: "var(--accent-light)", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>{product.price}</div>}
