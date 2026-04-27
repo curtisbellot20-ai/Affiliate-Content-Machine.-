@@ -1,12 +1,20 @@
 export async function scrapeProduct(url) {
   const res = await fetch(url, {
     headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
       "Accept-Language": "en-US,en;q=0.9",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Cache-Control": "no-cache",
+      "Pragma": "no-cache",
+      "Sec-Fetch-Dest": "document",
+      "Sec-Fetch-Mode": "navigate",
+      "Sec-Fetch-Site": "none",
+      "Sec-Fetch-User": "?1",
+      "Upgrade-Insecure-Requests": "1",
     },
     redirect: "follow",
-    signal: AbortSignal.timeout(10000),
+    signal: AbortSignal.timeout(15000),
   });
 
   if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
@@ -36,36 +44,45 @@ export async function scrapeProduct(url) {
   // Try to extract multiple images from Amazon's colorImages JSON in script tags
   let images = [];
 
-  $("script").each((_, el) => {
-    const content = $(el).children().first().text() || "";
-    const match = content.match(/'colorImages'\s*:\s*\{\s*'initial'\s*:\s*(\[[\s\S]*?\])\s*\}/);
-    if (match && images.length === 0) {
-      try {
-        const parsed = JSON.parse(match[1]);
-        images = parsed
-          .map((img) => img.hiRes || img.large || img.mainUrl)
-          .filter(Boolean);
-      } catch {}
-    }
+  // Method 1: data-a-dynamic-image on any element (most reliable for Amazon)
+  $("[data-a-dynamic-image]").each((_, el) => {
+    if (images.length > 0) return;
+    try {
+      const imgMap = JSON.parse($(el).attr("data-a-dynamic-image") || "{}");
+      images = Object.keys(imgMap).filter(Boolean);
+    } catch {}
   });
 
-  // Fallback: extract from #altImages thumbnails and convert to full-size URLs
+  // Method 2: colorImages JSON in script tags
   if (images.length === 0) {
-    $("#altImages img, #imageBlock img").each((_, el) => {
-      const src = $(el).attr("src") || "";
-      const fullSize = src.replace(/\._[A-Z0-9,_]+_\./i, ".");
-      if (fullSize && fullSize.includes("media-amazon") && !fullSize.includes("sprite")) {
-        images.push(fullSize);
+    $("script").each((_, el) => {
+      const content = $(el).html() || "";
+      const match = content.match(/'colorImages'\s*:\s*\{\s*'initial'\s*:\s*(\[[\s\S]*?\])/);
+      if (match && images.length === 0) {
+        try {
+          const parsed = JSON.parse(match[1]);
+          images = parsed.map((img) => img.hiRes || img.large).filter(Boolean);
+        } catch {}
       }
     });
   }
 
-  // Fallback: single main image
+  // Method 3: extract from alt image thumbnails and convert to full-size URLs
+  if (images.length === 0) {
+    $("img").each((_, el) => {
+      const src = $(el).attr("src") || $(el).attr("data-src") || "";
+      if (!src.includes("media-amazon")) return;
+      if (src.includes("sprite") || src.includes("transparent") || src.includes("pixel")) return;
+      const fullSize = src.replace(/\._[A-Z0-9,_]+_\./i, ".");
+      if (fullSize) images.push(fullSize);
+    });
+  }
+
+  // Method 4: single main image fallback
   if (images.length === 0) {
     const single =
       $("#landingImage").attr("data-old-hires") ||
       $("#landingImage").attr("src") ||
-      $("#imgBlkFront").attr("data-old-hires") ||
       $('meta[property="og:image"]').attr("content") ||
       $('meta[name="twitter:image"]').attr("content") ||
       "";
