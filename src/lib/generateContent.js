@@ -127,8 +127,8 @@ const FALLBACK = {
 export async function generateContent({ product, niche, audience, tone, platforms, persona }) {
   if (!process.env.ANTHROPIC_API_KEY) return FALLBACK;
 
-  const Anthropic = (await import("@anthropic-ai/sdk")).default;
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const { getAnthropicClient } = await import("@/lib/anthropicClient");
+  const client = await getAnthropicClient();
 
   const reviewsText = (product?.reviews || []).length > 0
     ? product.reviews.map((r, i) =>

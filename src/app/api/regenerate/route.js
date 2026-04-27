@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
+import { getAnthropicClient } from "@/lib/anthropicClient";
 
 export async function POST(request) {
   try {
     const { scriptIndex, framework, product, niche, audience, tone, persona, platforms } = await request.json();
 
-    if (!process.env.ANTHROPIC_API_KEY) {
+    let client;
+    try {
+      client = await getAnthropicClient();
+    } catch {
       return NextResponse.json({ error: "No API key configured" }, { status: 500 });
     }
-
-    const Anthropic = (await import("@anthropic-ai/sdk")).default;
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
     const platform = Array.isArray(platforms) ? platforms[0] : (platforms || "TikTok");
 
