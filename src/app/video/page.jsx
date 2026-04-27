@@ -4,7 +4,13 @@ import Link from "next/link";
 
 const W = 1080;
 const H = 1920;
-const DURATION = 26;
+const DURATION = 28;
+
+// Phase boundaries (fraction of total duration)
+const P_INTRO_END    = 0.11;  // 0-3s
+const P_HOOK_END     = 0.39;  // 3-11s
+const P_SHOWCASE_END = 0.75;  // 11-21s
+// cta: 21-28s
 
 function drawRoundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -23,7 +29,7 @@ function drawRoundRect(ctx, x, y, w, h, r) {
 function drawWrappedText(ctx, text, x, y, maxW, lineH) {
   const words = text.split(" ");
   let line = "";
-  let lines = [];
+  const lines = [];
   for (const word of words) {
     const test = line + word + " ";
     if (ctx.measureText(test).width > maxW && line) {
@@ -38,7 +44,18 @@ function drawWrappedText(ctx, text, x, y, maxW, lineH) {
   return lines.length * lineH;
 }
 
-function drawFrame(ctx, elapsed, script, productImg, productTitle) {
+function drawProductImage(ctx, img, x, y, size) {
+  if (!img || !img.naturalWidth) return;
+  ctx.save();
+  drawRoundRect(ctx, x, y, size, size, 40);
+  ctx.clip();
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(x, y, size, size);
+  ctx.drawImage(img, x, y, size, size);
+  ctx.restore();
+}
+
+function drawFrame(ctx, elapsed, script, productImgs, productTitle) {
   const progress = Math.min(elapsed / DURATION, 1);
 
   // Background
@@ -61,115 +78,155 @@ function drawFrame(ctx, elapsed, script, productImg, productTitle) {
   ctx.fillStyle = "#6c63ff";
   ctx.fillRect(0, H - 10, W * progress, 10);
 
-  const phase =
-    progress < 0.12 ? "intro"
-    : progress < 0.42 ? "hook"
-    : progress < 0.76 ? "body"
-    : "cta";
-
   const ease = (t) => Math.min(1, t * 3);
+  const imgs = productImgs || [];
+  const hasImgs = imgs.length > 0;
 
-  if (phase === "intro") {
-    const t = ease(progress / 0.12);
+  // ── INTRO ──
+  if (progress < P_INTRO_END) {
+    const t = ease(progress / P_INTRO_END);
     ctx.globalAlpha = t;
     ctx.font = "bold 120px -apple-system, sans-serif";
     ctx.fillStyle = "#fff";
     ctx.textAlign = "center";
-    ctx.fillText("⚡", W / 2, H * 0.44);
+    ctx.fillText("⚡", W / 2, H * 0.42);
     ctx.font = "bold 56px -apple-system, sans-serif";
     ctx.fillStyle = "#6c63ff";
-    ctx.fillText("Affiliate Content", W / 2, H * 0.52);
-    ctx.fillText("Machine", W / 2, H * 0.58);
+    ctx.fillText("Affiliate Content", W / 2, H * 0.50);
+    ctx.fillText("Machine", W / 2, H * 0.565);
     if (productTitle) {
-      ctx.font = "400 40px -apple-system, sans-serif";
-      ctx.fillStyle = "rgba(240,240,248,0.6)";
-      drawWrappedText(ctx, productTitle, W / 2, H * 0.65, W - 160, 52);
+      ctx.font = "400 38px -apple-system, sans-serif";
+      ctx.fillStyle = "rgba(240,240,248,0.55)";
+      drawWrappedText(ctx, productTitle, W / 2, H * 0.635, W - 160, 50);
     }
     ctx.globalAlpha = 1;
+    return;
   }
 
-  if (phase === "hook") {
-    const t = ease((progress - 0.12) / 0.08);
+  // ── HOOK ── image[0] + hook text
+  if (progress < P_HOOK_END) {
+    const t = ease((progress - P_INTRO_END) / 0.08);
     ctx.globalAlpha = t;
 
-    if (productImg) {
-      const imgSize = 680;
-      const imgX = (W - imgSize) / 2;
-      const imgY = H * 0.08;
-      ctx.save();
-      drawRoundRect(ctx, imgX, imgY, imgSize, imgSize, 40);
-      ctx.clip();
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(imgX, imgY, imgSize, imgSize);
-      ctx.drawImage(productImg, imgX, imgY, imgSize, imgSize);
-      ctx.restore();
+    const imgSize = 660;
+    const imgX = (W - imgSize) / 2;
+    const imgY = H * 0.07;
+
+    if (hasImgs) {
+      drawProductImage(ctx, imgs[0], imgX, imgY, imgSize);
     }
 
-    // Tag
-    const tagY = productImg ? H * 0.52 : H * 0.18;
+    const textY = hasImgs ? H * 0.50 : H * 0.22;
     ctx.font = "700 34px -apple-system, sans-serif";
     ctx.fillStyle = "#6c63ff";
     ctx.textAlign = "center";
-    ctx.fillText("🎯  HOOK", W / 2, tagY);
+    ctx.fillText("🎯  HOOK", W / 2, textY);
 
-    // Hook text
-    ctx.font = "700 62px -apple-system, sans-serif";
+    ctx.font = "700 60px -apple-system, sans-serif";
     ctx.fillStyle = "#f0f0f8";
-    drawWrappedText(ctx, script.hook, W / 2, tagY + 60, W - 160, 78);
-
+    drawWrappedText(ctx, script.hook, W / 2, textY + 58, W - 160, 76);
     ctx.globalAlpha = 1;
+    return;
   }
 
-  if (phase === "body") {
-    const t = ease((progress - 0.42) / 0.08);
+  // ── SHOWCASE ── cycle through images with body text bullet points
+  if (progress < P_SHOWCASE_END) {
+    const phaseProgress = (progress - P_HOOK_END) / (P_SHOWCASE_END - P_HOOK_END);
+    const t = ease(phaseProgress / 0.12);
     ctx.globalAlpha = t;
 
-    ctx.font = "700 34px -apple-system, sans-serif";
+    // Pick which image to show (cycle every ~2s)
+    const showcaseImgs = imgs.length > 1 ? imgs.slice(1) : imgs;
+    const secsInPhase = phaseProgress * (DURATION * (P_SHOWCASE_END - P_HOOK_END));
+    const imgIdx = Math.min(Math.floor(secsInPhase / 2), showcaseImgs.length - 1);
+    const currentImg = showcaseImgs[imgIdx] || imgs[0];
+
+    // Thumbnail strip at top
+    const thumbSize = 120;
+    const thumbGap = 16;
+    const thumbCount = Math.min(showcaseImgs.length, 5);
+    const stripW = thumbCount * thumbSize + (thumbCount - 1) * thumbGap;
+    const stripX = (W - stripW) / 2;
+    const stripY = H * 0.05;
+
+    showcaseImgs.slice(0, 5).forEach((img, i) => {
+      const tx = stripX + i * (thumbSize + thumbGap);
+      const isActive = i === imgIdx;
+      ctx.save();
+      drawRoundRect(ctx, tx, stripY, thumbSize, thumbSize, 14);
+      ctx.clip();
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(tx, stripY, thumbSize, thumbSize);
+      if (img && img.naturalWidth) ctx.drawImage(img, tx, stripY, thumbSize, thumbSize);
+      ctx.restore();
+      if (isActive) {
+        ctx.strokeStyle = "#6c63ff";
+        ctx.lineWidth = 6;
+        drawRoundRect(ctx, tx, stripY, thumbSize, thumbSize, 14);
+        ctx.stroke();
+      }
+    });
+
+    // Main image
+    const mainSize = 620;
+    const mainX = (W - mainSize) / 2;
+    const mainY = stripY + thumbSize + 24;
+    drawProductImage(ctx, currentImg, mainX, mainY, mainSize);
+
+    // Body text
+    ctx.font = "700 32px -apple-system, sans-serif";
     ctx.fillStyle = "#6c63ff";
     ctx.textAlign = "center";
-    ctx.fillText("💡  THE DETAILS", W / 2, H * 0.14);
+    ctx.fillText("💡  THE DETAILS", W / 2, mainY + mainSize + 50);
 
-    // Divider
     ctx.fillStyle = "rgba(108,99,255,0.4)";
-    ctx.fillRect(W / 2 - 60, H * 0.165, 120, 3);
+    ctx.fillRect(W / 2 - 60, mainY + mainSize + 72, 120, 3);
 
-    ctx.font = "400 54px -apple-system, sans-serif";
+    ctx.font = "400 48px -apple-system, sans-serif";
     ctx.fillStyle = "rgba(240,240,248,0.9)";
-    drawWrappedText(ctx, script.body, W / 2, H * 0.21, W - 160, 70);
+    drawWrappedText(ctx, script.body, W / 2, mainY + mainSize + 95, W - 160, 64);
 
     ctx.globalAlpha = 1;
+    return;
   }
 
-  if (phase === "cta") {
-    const t = ease((progress - 0.76) / 0.08);
+  // ── CTA ── first image + CTA text
+  {
+    const t = ease((progress - P_SHOWCASE_END) / 0.08);
     ctx.globalAlpha = t;
 
-    // CTA glow overlay
+    // CTA glow
     const ctaGlow = ctx.createLinearGradient(0, H * 0.25, 0, H * 0.85);
     ctaGlow.addColorStop(0, "rgba(108,99,255,0.22)");
     ctaGlow.addColorStop(1, "rgba(108,99,255,0)");
     ctx.fillStyle = ctaGlow;
     ctx.fillRect(0, H * 0.25, W, H * 0.6);
 
-    ctx.font = "100px -apple-system, sans-serif";
+    // Show last scraped image in CTA (feels fresh)
+    if (hasImgs) {
+      const ctaImg = imgs[imgs.length - 1] || imgs[0];
+      const imgSize = 520;
+      drawProductImage(ctx, ctaImg, (W - imgSize) / 2, H * 0.08, imgSize);
+    }
+
+    ctx.font = "80px -apple-system, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("🔥", W / 2, H * 0.4);
+    ctx.fillText("🔥", W / 2, H * 0.53);
 
     ctx.font = "bold 64px -apple-system, sans-serif";
     ctx.fillStyle = "#6c63ff";
-    ctx.fillText("DON'T MISS OUT", W / 2, H * 0.52);
+    ctx.fillText("DON'T MISS OUT", W / 2, H * 0.61);
 
-    // Divider
     ctx.fillStyle = "rgba(108,99,255,0.4)";
-    ctx.fillRect(W / 2 - 80, H * 0.545, 160, 3);
+    ctx.fillRect(W / 2 - 80, H * 0.627, 160, 3);
 
-    ctx.font = "400 54px -apple-system, sans-serif";
+    ctx.font = "400 52px -apple-system, sans-serif";
     ctx.fillStyle = "#f0f0f8";
-    drawWrappedText(ctx, script.cta, W / 2, H * 0.58, W - 160, 70);
+    drawWrappedText(ctx, script.cta, W / 2, H * 0.65, W - 160, 68);
 
     ctx.font = "700 48px -apple-system, sans-serif";
     ctx.fillStyle = "rgba(139,133,255,0.9)";
-    ctx.fillText("👆 Link in bio", W / 2, H * 0.82);
+    ctx.fillText("👆 Link in bio", W / 2, H * 0.87);
 
     ctx.globalAlpha = 1;
   }
@@ -181,6 +238,7 @@ export default function VideoPage() {
   const [status, setStatus] = useState("idle");
   const [videoUrl, setVideoUrl] = useState(null);
   const [progress, setProgress] = useState(0);
+  const [loadedImgCount, setLoadedImgCount] = useState(0);
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
   const recorderRef = useRef(null);
@@ -196,25 +254,34 @@ export default function VideoPage() {
     const ctx = canvas.getContext("2d");
     const script = campaign.videoScripts[selected];
 
-    setStatus("recording");
+    setStatus("loading");
     setProgress(0);
     setVideoUrl(null);
+    setLoadedImgCount(0);
 
-    // Try to load product image
-    let productImg = null;
-    if (campaign.product?.image) {
-      try {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        await new Promise((res) => {
-          img.onload = res;
-          img.onerror = res;
-          img.src = campaign.product.image;
-          setTimeout(res, 4000);
-        });
-        if (img.complete && img.naturalWidth > 0) productImg = img;
-      } catch {}
-    }
+    // Load all product images (up to 6)
+    const rawUrls = (campaign.product?.images?.length > 0
+      ? campaign.product.images
+      : campaign.product?.image
+        ? [campaign.product.image]
+        : []
+    ).slice(0, 6);
+
+    const productImgs = await Promise.all(
+      rawUrls.map((src) =>
+        new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => { setLoadedImgCount((n) => n + 1); resolve(img); };
+          img.onerror = () => resolve(null);
+          img.src = src;
+          setTimeout(() => resolve(null), 5000);
+        })
+      )
+    );
+    const validImgs = productImgs.filter(Boolean);
+
+    setStatus("recording");
 
     const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
       ? "video/webm;codecs=vp9"
@@ -237,7 +304,7 @@ export default function VideoPage() {
     function animate() {
       const elapsed = (Date.now() - start) / 1000;
       setProgress(Math.min(elapsed / DURATION, 1));
-      drawFrame(ctx, elapsed, script, productImg, campaign.product?.title);
+      drawFrame(ctx, elapsed, script, validImgs, campaign.product?.title);
 
       if (elapsed < DURATION) {
         rafRef.current = requestAnimationFrame(animate);
@@ -266,6 +333,8 @@ export default function VideoPage() {
     );
   }
 
+  const totalImgs = Math.min((campaign.product?.images?.length || (campaign.product?.image ? 1 : 0)), 6);
+
   return (
     <main style={{ minHeight: "100vh", padding: "40px 0 80px" }}>
       <div className="container" style={{ maxWidth: 960 }}>
@@ -276,11 +345,13 @@ export default function VideoPage() {
         <div style={{ marginBottom: 40 }}>
           <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: "-0.5px", marginBottom: 8 }}>🎬 Free Video Generator</h1>
           <p style={{ color: "var(--text-muted)", marginBottom: 12 }}>
-            Pick a script and generate a short-form video in TikTok/Reels format — 100% free, no sign-up needed.
+            Pick a script and generate a short-form video in TikTok/Reels format — all your product images included.
           </p>
           <div style={{ display: "inline-flex", gap: 8, flexWrap: "wrap" }}>
             <span style={{ padding: "6px 12px", background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 6, fontSize: 13, color: "var(--green)" }}>✓ Free — no API key needed</span>
-            <span style={{ padding: "6px 12px", background: "rgba(108,99,255,0.1)", border: "1px solid rgba(108,99,255,0.2)", borderRadius: 6, fontSize: 13, color: "var(--accent-light)" }}>⚠ Works best in Chrome or Edge</span>
+            <span style={{ padding: "6px 12px", background: "rgba(108,99,255,0.1)", border: "1px solid rgba(108,99,255,0.2)", borderRadius: 6, fontSize: 13, color: "var(--accent-light)" }}>
+              📸 Uses {totalImgs} product image{totalImgs !== 1 ? "s" : ""}
+            </span>
             <span style={{ padding: "6px 12px", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 13, color: "var(--text-muted)" }}>🔇 Silent — add voiceover in CapCut</span>
           </div>
         </div>
@@ -327,6 +398,12 @@ export default function VideoPage() {
                 <button onClick={generate} className="btn btn-primary" style={{ fontSize: 15, padding: "14px 28px", width: "100%", justifyContent: "center" }}>
                   ⚡ Generate Video (~{DURATION}s)
                 </button>
+              )}
+              {status === "loading" && (
+                <div className="card" style={{ textAlign: "center" }}>
+                  <div style={{ fontWeight: 600, marginBottom: 6 }}>Loading images…</div>
+                  <div style={{ fontSize: 13, color: "var(--text-muted)" }}>{loadedImgCount} / {totalImgs} loaded</div>
+                </div>
               )}
               {status === "recording" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
