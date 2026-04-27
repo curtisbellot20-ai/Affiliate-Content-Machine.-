@@ -1,11 +1,12 @@
 import CopyButton from "./CopyButton";
+import OpenInButton from "./OpenInButton";
 
 export default function CaptionsHashtagsSection({ captions }) {
   if (!captions) return null;
 
   const platforms = [
-    { key: "instagram", label: "Instagram", icon: "📸" },
-    { key: "tiktok", label: "TikTok", icon: "🎵" },
+    { key: "instagram", label: "Instagram", icon: "📸", canvaUrl: "https://www.canva.com/create/instagram-posts/" },
+    { key: "tiktok", label: "TikTok", icon: "🎵", capCutUrl: "https://www.capcut.com/", canvaUrl: "https://www.canva.com/create/tiktok-videos/" },
     { key: "twitter", label: "X / Twitter", icon: "🐦" },
   ];
 
@@ -16,13 +17,21 @@ export default function CaptionsHashtagsSection({ captions }) {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {platforms.map(({ key, label, icon }) => (
+        {platforms.map(({ key, label, icon, canvaUrl, capCutUrl }) => (
           <div key={key} className="card">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
               <div style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
                 <span>{icon}</span> {label}
               </div>
-              <CopyButton text={captions[key] || ""} />
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                <CopyButton text={captions[key] || ""} />
+                {canvaUrl && (
+                  <OpenInButton text={captions[key] || ""} url={canvaUrl} label="Canva" icon="🎨" />
+                )}
+                {capCutUrl && (
+                  <OpenInButton text={captions[key] || ""} url={capCutUrl} label="CapCut" icon="🎬" />
+                )}
+              </div>
             </div>
             <p style={{ color: "var(--text-muted)", fontSize: 14, lineHeight: 1.8 }}>{captions[key]}</p>
           </div>
