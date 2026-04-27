@@ -28,14 +28,23 @@ export default function ProductResearchCard({ product, research }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
         {product && (
           <div className="card">
-            {product.image && (
-              <div style={{ marginBottom: 16, borderRadius: "var(--radius-sm)", overflow: "hidden", background: "#fff", textAlign: "center" }}>
-                <img
-                  src={product.image}
-                  alt={product.title}
-                  style={{ maxWidth: "100%", maxHeight: 220, objectFit: "contain", display: "block", margin: "0 auto" }}
-                  onError={(e) => { e.target.style.display = "none"; }}
-                />
+            {product.images?.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 8 }}>
+                  {product.images.map((src, i) => (
+                    <a key={i} href={src} target="_blank" rel="noopener noreferrer" title="Open full size" style={{ flexShrink: 0 }}>
+                      <img
+                        src={src}
+                        alt={`Product image ${i + 1}`}
+                        style={{ width: i === 0 ? 160 : 80, height: i === 0 ? 160 : 80, objectFit: "contain", borderRadius: 8, background: "#fff", border: i === 0 ? "2px solid var(--accent)" : "1px solid var(--border)", cursor: "pointer" }}
+                        onError={(e) => { e.target.parentElement.style.display = "none"; }}
+                      />
+                    </a>
+                  ))}
+                </div>
+                <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
+                  {product.images.length} image{product.images.length !== 1 ? "s" : ""} found — click to open full size
+                </div>
               </div>
             )}
             <div style={{ fontWeight: 700, marginBottom: 12, fontSize: 13, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--text-muted)" }}>Product Info</div>

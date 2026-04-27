@@ -138,7 +138,7 @@ export default function ResultsPage() {
           </section>
 
           <section id="pinterest" style={{ paddingTop: 64 }}>
-            <PinterestPinsSection pins={campaign.pinterestPins} productImage={campaign.product?.image} />
+            <PinterestPinsSection pins={campaign.pinterestPins} productImage={campaign.product?.images?.[0] || campaign.product?.image} />
           </section>
 
           <section id="influencer" style={{ paddingTop: 64 }}>
@@ -154,7 +154,7 @@ export default function ResultsPage() {
           </section>
 
           <section id="captions" style={{ paddingTop: 64 }}>
-            <CaptionsHashtagsSection captions={campaign.captions} productImage={campaign.product?.image} />
+            <CaptionsHashtagsSection captions={campaign.captions} productImage={campaign.product?.images?.[0] || campaign.product?.image} />
           </section>
         </div>
       </div>
