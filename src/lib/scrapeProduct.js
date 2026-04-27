@@ -41,9 +41,6 @@ export async function scrapeProduct(url) {
     $('[itemprop="price"]').attr("content") ||
     "";
 
-  // Try to extract multiple images from Amazon's colorImages JSON in script tags
-  let images = [];
-
   // Step 1: get main image at highest resolution from data-a-dynamic-image
   let mainImages = [];
   $("[data-a-dynamic-image]").each((_, el) => {
@@ -90,7 +87,7 @@ export async function scrapeProduct(url) {
   // Combine all, deduplicate by image ID, keep highest res first
   const allRaw = [...mainImages, ...altImages, ...scriptImages];
   const seenIds = new Set();
-  let images = [];
+  const images = [];
   for (const imgUrl of allRaw) {
     const idMatch = imgUrl.match(/\/images\/I\/([A-Za-z0-9+]+)\./);
     const id = idMatch ? idMatch[1] : imgUrl;
@@ -108,8 +105,6 @@ export async function scrapeProduct(url) {
     if (single) images.push(single);
   }
 
-  // Dedupe and limit to 8
-  images = [...new Set(images.filter(Boolean))].slice(0, 8);
   const image = images[0] || "";
 
   // Grab meaningful body text (exclude nav/footer/script)
