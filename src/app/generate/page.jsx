@@ -10,6 +10,7 @@ export default function GeneratePage() {
   const [niche, setNiche] = useState("");
   const [audience, setAudience] = useState("");
   const [tone, setTone] = useState("conversational");
+  const [extraImages, setExtraImages] = useState("");
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
@@ -43,6 +44,12 @@ export default function GeneratePage() {
 
       if (!genRes.ok) throw new Error(data.error || "Generation failed");
 
+      // Merge any manually added images
+      if (extraImages.trim()) {
+        const manualImgs = extraImages.split("\n").map(s => s.trim()).filter(Boolean);
+        product.images = [...new Set([...(product.images || []), ...manualImgs])].slice(0, 8);
+        product.image = product.image || manualImgs[0];
+      }
       const campaign = { ...data, product, meta: { url, niche, audience, tone, generatedAt: Date.now() } };
       localStorage.setItem("acm_campaign", JSON.stringify(campaign));
       router.push("/results");
@@ -90,6 +97,37 @@ export default function GeneratePage() {
                 color: "var(--text)",
                 outline: "none",
                 transition: "border-color 0.15s",
+              }}
+              onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
+              onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+            />
+          </div>
+
+          {/* Extra images */}
+          <div>
+            <label style={{ display: "block", fontWeight: 600, marginBottom: 4, fontSize: 14 }}>
+              Product image URLs <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(optional)</span>
+            </label>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 8 }}>
+              Paste one image URL per line. Right-click any Amazon product photo → "Copy image address" and paste here.
+            </p>
+            <textarea
+              value={extraImages}
+              onChange={(e) => setExtraImages(e.target.value)}
+              placeholder={"https://m.media-amazon.com/images/I/example1.jpg\nhttps://m.media-amazon.com/images/I/example2.jpg"}
+              rows={3}
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                background: "var(--bg-card)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius-sm)",
+                color: "var(--text)",
+                outline: "none",
+                resize: "vertical",
+                fontFamily: "monospace",
+                fontSize: 12,
+                lineHeight: 1.6,
               }}
               onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
               onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
