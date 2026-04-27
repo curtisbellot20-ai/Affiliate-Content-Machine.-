@@ -124,7 +124,7 @@ const FALLBACK = {
   },
 };
 
-export async function generateContent({ product, niche, audience, tone, platform, persona }) {
+export async function generateContent({ product, niche, audience, tone, platforms, persona }) {
   if (!process.env.ANTHROPIC_API_KEY) return FALLBACK;
 
   const Anthropic = (await import("@anthropic-ai/sdk")).default;
@@ -136,9 +136,11 @@ export async function generateContent({ product, niche, audience, tone, platform
       ).join("\n\n")
     : "No reviews available.";
 
-  const selectedPlatform = platform || "TikTok";
+  // platforms is an array; use first entry as primary platform for script style
+  const platformList = Array.isArray(platforms) && platforms.length > 0 ? platforms : ["TikTok"];
+  const selectedPlatform = platformList[0];
   const selectedPersona = persona || "Best Friend";
-  const selectedTone = tone || "conversational";
+  const selectedTone = tone || "Conversational";
 
   const productContext = `
 Product Title: ${product?.title || "Unknown Product"}
@@ -148,7 +150,8 @@ URL: ${product?.url || ""}
 Page content excerpt: ${product?.body?.slice(0, 1500) || ""}
 Niche: ${niche || "general"}
 Target Audience: ${audience || "general consumers"}
-Platform: ${selectedPlatform} — ${PLATFORM_NOTES[selectedPlatform] || ""}
+Primary Platform: ${selectedPlatform} — ${PLATFORM_NOTES[selectedPlatform] || ""}
+All Platforms: ${platformList.join(", ")}
 Influencer Persona: ${selectedPersona} — voice style: ${PERSONA_VOICES[selectedPersona] || "authentic and relatable"}
 Content Tone: ${selectedTone}
 
@@ -165,10 +168,10 @@ Affiliate Disclosure to include where relevant: "Disclosure: This post may conta
 IMPORTANT VOICE RULES:
 - Every script must sound like the "${selectedPersona}" persona. ${PERSONA_VOICES[selectedPersona] || ""}
 - Tone must be: ${selectedTone}
-- Platform: ${selectedPlatform} — ${PLATFORM_NOTES[selectedPlatform] || ""}
+- Primary platform: ${selectedPlatform} — ${PLATFORM_NOTES[selectedPlatform] || ""}
+- All selected platforms: ${platformList.join(", ")} — make content feel native to these platforms
 - Never say "guaranteed results", "you will definitely make money", "this cures", or "best in the world"
 - Keep scripts natural and human — not robotic or salesy
-- Match the energy of ${selectedPlatform} creators
 
 Return a valid JSON object (no markdown, no code fences) with EXACTLY this structure:
 {
