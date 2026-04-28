@@ -233,84 +233,19 @@ Return a valid JSON object (no markdown, no code fences) with EXACTLY this struc
 }
 
 REQUIREMENTS:
-
-HOOKS — generate exactly 10. Each hook must be product-specific and use the forced angle below. No two hooks may share a similar opening structure.
-Hook 1 — Question angle: Open with a direct question to the target audience about their frustration or desire related to this product. Must name or clearly reference the product category.
-Hook 2 — Confession angle: Start with "I'll be honest —" then share a personal admission about the niche or a past mistake before this product.
-Hook 3 — Number/stat angle: Open with a specific number or statistic (real or illustrative) tied to the product's benefit or the problem it solves.
-Hook 4 — Problem callout angle: Start with "The problem with most [product category]..." and name the exact flaw this product fixes.
-Hook 5 — POV angle: Start with "POV: You just discovered" followed by a vivid scenario of using this specific product.
-Hook 6 — Secret/hidden angle: Start with "Nobody is talking about" followed by a specific lesser-known benefit or use case of this product.
-Hook 7 — Before/after tease angle: Open with a one-sentence contrast showing life before vs. after this product. Do NOT use the word "Before".
-Hook 8 — Audience callout angle: Start with "If you [describe a specific struggle the target audience has]," — make the struggle specific to this product's niche.
-Hook 9 — Test/experiment angle: Start with "I tried [product name or clear reference]" and tease a surprising or counter-intuitive result.
-Hook 10 — Urgency/FOMO angle: Open with a sense of missing out or a time-sensitive framing tied to a specific benefit of this product.
-
-CTAS — generate exactly 10. Each CTA must be product-specific and use the forced style below. No two CTAs may use the same verb to open.
-CTA 1 — Soft discovery: Gentle invitation to learn more. Start with "Find out".
-CTA 2 — Curiosity gap: Tease a specific benefit or result they'll only get by clicking. Start with "See".
-CTA 3 — Urgency: Create time or quantity pressure tied to the product. Start with "Grab".
-CTA 4 — Social proof: Reference that others are already using/loving it. Start with "Join".
-CTA 5 — Benefit-first: Lead with the specific outcome they'll get. Start with "Get".
-CTA 6 — Direct action: No fluff, just the action. Start with "Shop".
-CTA 7 — FOMO: Frame it as something they'll regret missing. Start with "Don't".
-CTA 8 — Personal/empathetic: Speak directly to their specific struggle. Start with "If".
-CTA 9 — Journey/transformation: Frame the click as starting a change. Start with "Start".
-CTA 10 — Value/savings angle: Highlight a deal, price, or ROI. Start with "Save" or a dollar/percent figure.
-
-VIDEO SCRIPTS — use EXACTLY these 10 frameworks in this exact order. Each has a FORCED hook opener that you must use as the literal start of the hook field:
-
-Script 1 — Framework: "I Wish I Knew This Sooner"
-  Hook MUST start with: "I wish I found [product-specific thing] before I wasted [time/money] on..."
-  Body format: personal regret → discovery → transformation result
-  Voiceover style: reflective, first-person story
-
-Script 2 — Framework: "Warning"
-  Hook MUST start with: "Warning:"
-  Body format: state the risk or mistake → introduce product as the safe solution → one specific result
-  Voiceover style: serious and urgent, then reassuring
-
-Script 3 — Framework: "POV Hook"
-  Hook MUST start with: "POV:"
-  Body format: immersive second-person scenario where the viewer is experiencing the benefit
-  Voiceover style: present tense, visual and sensory
-
-Script 4 — Framework: "Before vs After"
-  Hook MUST be two short lines in this exact format: "Before [product]: [negative state]. After: [specific positive state]."
-  Body format: paint the before in 2 details, then the after in 2 specific improvements
-  Voiceover style: contrast-driven, emotional
-
-Script 5 — Framework: "3 Things Nobody Tells You"
-  Hook MUST start with: "3 things nobody tells you about [niche or problem]:"
-  Body format: NUMBERED LIST — write literally "1. [thing]. 2. [thing]. 3. [thing]." — product is the solution for at least one
-  Voiceover style: educational, punchy
-
-Script 6 — Framework: "Stop Doing This"
-  Hook MUST start with: "Stop [specific wrong behavior people do]."
-  Body format: explain why that behavior is costing them → introduce the product as the right way
-  Voiceover style: direct, slightly tough-love, then empathetic
-
-Script 7 — Framework: "Quick Hack"
-  Hook MUST start with: "Here's a [niche] hack that actually works:"
-  Body format: STEP FORMAT — "Step 1: ... Step 2: ... Step 3: ..." — the product is the tool in one of the steps
-  Voiceover style: fast-paced, practical
-
-Script 8 — Framework: "Real Talk"
-  Hook MUST start with: "Real talk —"
-  Body format: admit something honest or slightly negative about the niche/product → turn it into a reason the product is still worth it
-  Voiceover style: candid, conversational, no hype
-
-Script 9 — Framework: "If You're Lazy Like Me"
-  Hook MUST start with: "If you're lazy like me,"
-  Body format: relatable low-effort framing → product as the easy shortcut → specific result with minimal effort
-  Voiceover style: self-deprecating humor, warm
-
-Script 10 — Framework: "Take This As A Sign"
-  Hook MUST start with: "Take this as a sign to"
-  Body format: motivational push → product as the vehicle for the change → one vivid outcome
-  Voiceover style: inspiring, slightly emotional
-
-IMPORTANT: Every script's voiceover must be completely different in structure from all others. No two voiceovers should have the same opening paragraph or the same flow. Each must be a complete, ready-to-read script of 150-200 words.
+- hooks: exactly 10 standalone hooks, varied openers — questions, statements, POVs, confessions, warnings. Every hook must be specific to this product. No two hooks may open the same way.
+- ctas: exactly 10 standalone CTAs, varied — some urgent, some soft, some curiosity-based. Every CTA must be specific to this product. No two CTAs may start with the same word.
+- videoScripts: exactly 10 scripts. Pick the 10 BEST frameworks from this list for this product and platform: ${FRAMEWORKS.join(", ")}
+  Each script MUST use a DIFFERENT framework and have a DIFFERENT structural format:
+  • "I Wish I Knew This Sooner" → hook starts with regret/discovery
+  • "Before vs After" → hook is a two-line contrast
+  • "POV Hook" → hook starts with "POV:"
+  • "3 Things Nobody Tells You" → body is a numbered list
+  • "Warning" → hook starts with "Warning:"
+  • "Quick Hack" → short punchy format, step-based body
+  • "Honest Review" / "Real Talk" → admits flaws first
+  • "Stop Doing This" → hook starts with "Stop [behavior]"
+  • The voiceover for each script must be complete and ready to read on camera (150-200 words)
 
 - pinterestPins: exactly 5 pins
 - influencerPrompts: exactly 5 prompts tailored to the ${selectedPersona} persona
