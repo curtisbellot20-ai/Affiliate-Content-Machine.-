@@ -301,13 +301,25 @@ IMPORTANT: Every script's voiceover must be completely different in structure fr
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 16000,
+    max_tokens: 8192,
     messages: [{ role: "user", content: prompt }],
   });
 
-  const text = message.content[0].text.trim();
+  if (message.stop_reason === "max_tokens") {
+    throw new Error("Content generation was cut short — output too long. Try selecting fewer platforms.");
+  }
+
+  const textBlock = message.content?.find((b) => b.type === "text");
+  if (!textBlock?.text) throw new Error("No text content in API response.");
+
+  const text = textBlock.text.trim();
   const jsonStart = text.indexOf("{");
   const jsonEnd = text.lastIndexOf("}");
+
+  if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) {
+    throw new Error("API response did not contain valid JSON.");
+  }
+
   const parsed = JSON.parse(text.slice(jsonStart, jsonEnd + 1));
   return parsed;
 }

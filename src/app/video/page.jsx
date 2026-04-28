@@ -239,6 +239,7 @@ export default function VideoPage() {
   const [videoUrl, setVideoUrl] = useState(null);
   const [progress, setProgress] = useState(0);
   const [loadedImgCount, setLoadedImgCount] = useState(0);
+  const [genError, setGenError] = useState("");
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
   const recorderRef = useRef(null);
@@ -257,62 +258,78 @@ export default function VideoPage() {
     setStatus("loading");
     setProgress(0);
     setVideoUrl(null);
+    setGenError("");
     setLoadedImgCount(0);
 
-    // Load all product images (up to 6)
-    const rawUrls = (campaign.product?.images?.length > 0
-      ? campaign.product.images
-      : campaign.product?.image
-        ? [campaign.product.image]
-        : []
-    ).slice(0, 6);
+    try {
+      if (!window.MediaRecorder) throw new Error("Video recording is not supported in this browser. Try Chrome or Edge.");
 
-    const productImgs = await Promise.all(
-      rawUrls.map((src) =>
-        new Promise((resolve) => {
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-          img.onload = () => { setLoadedImgCount((n) => n + 1); resolve(img); };
-          img.onerror = () => resolve(null);
-          img.src = src;
-          setTimeout(() => resolve(null), 5000);
-        })
-      )
-    );
-    const validImgs = productImgs.filter(Boolean);
+      // Load all product images (up to 6)
+      const rawUrls = (campaign.product?.images?.length > 0
+        ? campaign.product.images
+        : campaign.product?.image
+          ? [campaign.product.image]
+          : []
+      ).slice(0, 6);
 
-    setStatus("recording");
+      const productImgs = await Promise.all(
+        rawUrls.map((src) =>
+          new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.onload = () => { setLoadedImgCount((n) => n + 1); resolve(img); };
+            img.onerror = () => resolve(null);
+            img.src = src;
+            setTimeout(() => resolve(null), 5000);
+          })
+        )
+      );
+      const validImgs = productImgs.filter(Boolean);
 
-    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-      ? "video/webm;codecs=vp9"
-      : "video/webm";
+      setStatus("recording");
 
-    const stream = canvas.captureStream(30);
-    const recorder = new MediaRecorder(stream, { mimeType });
-    recorderRef.current = recorder;
-    const chunks = [];
-    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
-    recorder.onstop = () => {
-      const blob = new Blob(chunks, { type: "video/webm" });
-      setVideoUrl(URL.createObjectURL(blob));
-      setStatus("done");
-    };
+      const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+        ? "video/webm;codecs=vp9"
+        : MediaRecorder.isTypeSupported("video/webm")
+          ? "video/webm"
+          : "";
 
-    recorder.start(100);
-    const start = Date.now();
+      if (!mimeType) throw new Error("No supported video format found in this browser. Try Chrome or Edge.");
 
-    function animate() {
-      const elapsed = (Date.now() - start) / 1000;
-      setProgress(Math.min(elapsed / DURATION, 1));
-      drawFrame(ctx, elapsed, { ...script, body: script.voiceover || script.body }, validImgs, campaign.product?.title);
+      const stream = canvas.captureStream(30);
+      const recorder = new MediaRecorder(stream, { mimeType });
+      recorderRef.current = recorder;
+      const chunks = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+      recorder.onerror = (e) => {
+        setGenError(`Recording error: ${e.error?.message || "unknown error"}`);
+        setStatus("idle");
+      };
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "video/webm" });
+        setVideoUrl(URL.createObjectURL(blob));
+        setStatus("done");
+      };
 
-      if (elapsed < DURATION) {
-        rafRef.current = requestAnimationFrame(animate);
-      } else {
-        recorder.stop();
+      recorder.start(100);
+      const start = Date.now();
+
+      function animate() {
+        const elapsed = (Date.now() - start) / 1000;
+        setProgress(Math.min(elapsed / DURATION, 1));
+        drawFrame(ctx, elapsed, { ...script, body: script.voiceover || script.body }, validImgs, campaign.product?.title);
+
+        if (elapsed < DURATION) {
+          rafRef.current = requestAnimationFrame(animate);
+        } else {
+          recorder.stop();
+        }
       }
+      animate();
+    } catch (err) {
+      setGenError(err.message || "Video generation failed. Please try again.");
+      setStatus("idle");
     }
-    animate();
   }
 
   function cancel() {
@@ -394,6 +411,11 @@ export default function VideoPage() {
 
             <div>
               <label style={{ display: "block", fontWeight: 600, marginBottom: 10, fontSize: 14 }}>2. Generate</label>
+              {genError && (
+                <div style={{ padding: "12px 16px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 8, color: "var(--red)", fontSize: 14, marginBottom: 10 }}>
+                  {genError}
+                </div>
+              )}
               {status === "idle" && (
                 <button onClick={generate} className="btn btn-primary" style={{ fontSize: 15, padding: "14px 28px", width: "100%", justifyContent: "center" }}>
                   ⚡ Generate Video (~{DURATION}s)
