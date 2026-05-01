@@ -1,30 +1,4 @@
-const FRAMEWORKS = [
-  "I Wish I Knew This Sooner",
-  "Stop Doing This",
-  "3 Things Nobody Tells You",
-  "POV Hook",
-  "Before vs After",
-  "I Tested It So You Don't Have To",
-  "Hidden Gem",
-  "Don't Buy Until You See This",
-  "This Feels Illegal",
-  "You're Making This Mistake",
-  "What Nobody Shows You",
-  "Quick Hack",
-  "I Tried Everything",
-  "This Shouldn't Work But It Does",
-  "If You're Lazy Like Me",
-  "The Shortcut",
-  "Real Talk",
-  "This Changed My Routine",
-  "I Almost Gatekept This",
-  "Warning",
-  "This Is Why You're Stuck",
-  "Underrated",
-  "Simple Upgrade",
-  "Take This As A Sign",
-  "You Don't Need More Info",
-];
+import { FRAMEWORKS } from "@/lib/constants";
 
 const PERSONA_VOICES = {
   "Best Friend": "casual, warm, enthusiastic — like texting a friend: 'omg you HAVE to try this'",
