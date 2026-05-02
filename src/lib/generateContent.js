@@ -132,21 +132,45 @@ Customer Reviews:
 ${reviewsText}
 `.trim();
 
-  const prompt = `You are an elite affiliate marketing copywriter and viral content strategist. Your job is to turn affiliate links into high-converting scripts that get clicks, attention, and sales.
+  const prompt = `You are an elite affiliate marketing copywriter and viral content strategist.
 
 ${productContext}
 
-Affiliate Disclosure to include where relevant: "Disclosure: This post may contain affiliate links. I may earn a commission if you buy through my link."
+Affiliate Disclosure: "Disclosure: This post may contain affiliate links. I may earn a commission if you buy through my link."
 
-IMPORTANT VOICE RULES:
-- Every script must sound like the "${selectedPersona}" persona. ${PERSONA_VOICES[selectedPersona] || ""}
-- Tone must be: ${selectedTone}
-- Primary platform: ${selectedPlatform} — ${PLATFORM_NOTES[selectedPlatform] || ""}
-- All selected platforms: ${platformList.join(", ")} — make content feel native to these platforms
+VOICE RULES:
+- Persona: "${selectedPersona}" — ${PERSONA_VOICES[selectedPersona] || ""}
+- Tone: ${selectedTone}
+- Platform: ${selectedPlatform} — ${PLATFORM_NOTES[selectedPlatform] || ""}
 - Never say "guaranteed results", "you will definitely make money", "this cures", or "best in the world"
-- Keep scripts natural and human — not robotic or salesy
 
-Return a valid JSON object (no markdown, no code fences) with EXACTLY this structure:
+STRICT UNIQUENESS RULES — these are non-negotiable:
+1. NO sentence may appear in more than one script, hook, or CTA. Not even close paraphrases.
+2. NO phrase of 4+ words may repeat across any two pieces of content.
+3. Every voiceover must follow a DIFFERENT emotional arc. Use each arc exactly once across all 10 scripts:
+   - Arc A: regret → discovery → relief
+   - Arc B: skepticism → reluctant try → conviction
+   - Arc C: frustration → stumbling on solution → joy
+   - Arc D: curiosity → research → confident recommendation
+   - Arc E: embarrassment → fix → confidence
+   - Arc F: FOMO → action → satisfaction
+   - Arc G: confusion → clarity → momentum
+   - Arc H: laziness → easy win → surprise at results
+   - Arc I: habit → upgrade → can't go back
+   - Arc J: warning → stakes → safe outcome
+4. BANNED phrases — do not use these anywhere in the output:
+   "link in bio", "game changer", "changed my life", "you need this", "trust me",
+   "literally obsessed", "I can't believe", "check it out", "this product",
+   "highly recommend", "must have", "don't sleep on"
+5. Every voiceover must open with a structurally different sentence type:
+   scripts 1,6 — declarative statement
+   scripts 2,7 — imperative command
+   scripts 3,8 — question
+   scripts 4,9 — exclamation or contrast
+   scripts 5,10 — number or list opener
+6. Vary sentence length deliberately: some voiceovers use short punchy sentences (5-8 words), others use longer flowing ones (15-20 words). Never use the same rhythm in two scripts.
+
+Return a valid JSON object (no markdown, no code fences):
 {
   "research": {
     "summary": "2-3 sentence product summary",
@@ -156,121 +180,102 @@ Return a valid JSON object (no markdown, no code fences) with EXACTLY this struc
     "competitorGap": "what competitors lack",
     "emotionalAngle": "the core emotional reason someone buys this"
   },
-  "hooks": ["hook1", "hook2", "hook3", "hook4", "hook5", "hook6", "hook7", "hook8", "hook9", "hook10"],
-  "ctas": ["cta1", "cta2", "cta3", "cta4", "cta5", "cta6", "cta7", "cta8", "cta9", "cta10"],
+  "hooks": ["hook1","hook2","hook3","hook4","hook5","hook6","hook7","hook8","hook9","hook10"],
+  "ctas": ["cta1","cta2","cta3","cta4","cta5","cta6","cta7","cta8","cta9","cta10"],
   "videoScripts": [
     {
       "title": "script title",
       "framework": "framework name",
-      "hook": "attention-grabbing opener (1-2 sentences)",
-      "problem": "the pain point this addresses",
-      "solution": "how the product solves it",
-      "proof": "why it works / results / social proof",
-      "voiceover": "the complete spoken script from start to finish",
-      "sceneDirection": "what to film, show, or do on camera",
-      "onScreenText": "text overlays to display",
-      "caption": "social media caption with emojis",
+      "hook": "opener (1-2 sentences)",
+      "problem": "pain point",
+      "solution": "how product solves it",
+      "proof": "why it works",
+      "voiceover": "complete spoken script, 120-160 words",
+      "sceneDirection": "what to film",
+      "onScreenText": "text overlays",
+      "caption": "social caption with emojis",
       "cta": "call to action",
-      "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"]
+      "hashtags": ["#tag1","#tag2","#tag3","#tag4","#tag5"]
     }
   ],
-  "pinterestPins": [
-    { "title": "pin title", "description": "pin description", "boardSuggestion": "board name" }
-  ],
-  "influencerPrompts": [
-    { "angle": "content angle", "script": "what to say/do", "duration": "length" }
-  ],
+  "pinterestPins": [{"title":"","description":"","boardSuggestion":""}],
+  "influencerPrompts": [{"angle":"","script":"","duration":""}],
   "blogPost": {
-    "title": "SEO blog post title",
-    "seoTitles": ["seo title 1", "seo title 2", "seo title 3"],
-    "metaDescription": "meta description under 155 chars",
-    "intro": "compelling blog intro paragraph (150-200 words)",
-    "content": "full blog post in markdown, 1000+ words, H2 headers, pros/cons, FAQ, affiliate disclosure, AFFILIATE_LINK placeholder"
+    "title": "",
+    "seoTitles": ["","",""],
+    "metaDescription": "",
+    "intro": "",
+    "content": ""
   },
-  "emails": [
-    { "subject": "email subject", "body": "full email body" }
-  ],
-  "sms": ["sms1", "sms2", "sms3"],
-  "captions": {
-    "instagram": "instagram caption",
-    "tiktok": "tiktok caption",
-    "twitter": "tweet under 280 chars",
-    "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5", "#tag6", "#tag7", "#tag8"]
-  },
+  "emails": [{"subject":"","body":""}],
+  "sms": ["","",""],
+  "captions": {"instagram":"","tiktok":"","twitter":"","hashtags":[]},
   "landingPage": {
-    "headline": "primary headline",
-    "subheadline": "supporting subheadline",
-    "headlines": ["headline1", "headline2", "headline3", "headline4", "headline5"],
-    "emailSubjects": ["subject1", "subject2", "subject3", "subject4", "subject5"]
+    "headline": "",
+    "subheadline": "",
+    "headlines": ["","","","",""],
+    "emailSubjects": ["","","","",""]
   }
 }
 
 REQUIREMENTS:
-- hooks: exactly 10 standalone hooks — every one must open DIFFERENTLY: mix questions, confessions, warnings, POVs, statements, numbers. No two can start with the same word.
-- ctas: exactly 10 standalone CTAs — vary urgency levels: soft, medium, urgent, curiosity-based, social proof. No two can start with the same word.
 
-VIDEO SCRIPTS — use EXACTLY these 10 frameworks in this exact order. Each has a FORCED hook opener that you must use as the literal start of the hook field:
+hooks (exactly 10): Each must use a completely different angle and sentence type. Distribute like this — 3 questions, 2 confessions, 2 warnings/dangers, 1 bold claim, 1 number-led, 1 POV. No two hooks may start with the same word. Every hook must name something specific about this product.
 
-Script 1 — Framework: "I Wish I Knew This Sooner"
-  Hook MUST start with: "I wish I found [product-specific thing] before I wasted [time/money] on..."
-  Body format: personal regret → discovery → transformation result
-  Voiceover style: reflective, first-person story
+ctas (exactly 10): Vary the urgency and angle — 2 soft/curiosity, 2 social-proof, 2 scarcity/urgency, 2 benefit-focused, 2 action-forward. No two CTAs may start with the same word. Each must feel like it belongs in a different part of a funnel.
 
-Script 2 — Framework: "Warning"
-  Hook MUST start with: "Warning:"
-  Body format: state the risk or mistake → introduce product as the safe solution → one specific result
-  Voiceover style: serious and urgent, then reassuring
+VIDEO SCRIPTS — 10 scripts, each using one of these frameworks in this exact order, with the forced hook opener shown:
 
-Script 3 — Framework: "POV Hook"
-  Hook MUST start with: "POV:"
-  Body format: immersive second-person scenario where the viewer is experiencing the benefit
-  Voiceover style: present tense, visual and sensory
+Script 1 — "I Wish I Knew This Sooner" | Arc A | Declarative opener
+  Hook starts: "I wish I found [specific thing] before I spent [time/money] on..."
+  Body: regret → discovery → transformation
 
-Script 4 — Framework: "Before vs After"
-  Hook MUST be two short lines in this exact format: "Before [product]: [negative state]. After: [specific positive state]."
-  Body format: paint the before in 2 details, then the after in 2 specific improvements
-  Voiceover style: contrast-driven, emotional
+Script 2 — "Warning" | Arc J | Imperative opener
+  Hook starts: "Warning:"
+  Body: risk/mistake → product as safe solution → specific result
 
-Script 5 — Framework: "3 Things Nobody Tells You"
-  Hook MUST start with: "3 things nobody tells you about [niche or problem]:"
-  Body format: NUMBERED LIST — write literally "1. [thing]. 2. [thing]. 3. [thing]." — product is the solution for at least one
-  Voiceover style: educational, punchy
+Script 3 — "POV Hook" | Arc F | Question opener
+  Hook starts: "POV:"
+  Body: immersive second-person scenario living the benefit
 
-Script 6 — Framework: "Stop Doing This"
-  Hook MUST start with: "Stop [specific wrong behavior people do]."
-  Body format: explain why that behavior is costing them → introduce the product as the right way
-  Voiceover style: direct, slightly tough-love, then empathetic
+Script 4 — "Before vs After" | Arc C | Contrast opener
+  Hook: "Before [product]: [negative]. After: [specific positive]."
+  Body: 2 before details, 2 after improvements
 
-Script 7 — Framework: "Quick Hack"
-  Hook MUST start with: "Here's a [niche] hack that actually works:"
-  Body format: STEP FORMAT — "Step 1: ... Step 2: ... Step 3: ..." — the product is the tool in one of the steps
-  Voiceover style: fast-paced, practical
+Script 5 — "3 Things Nobody Tells You" | Arc D | Number opener
+  Hook starts: "3 things nobody tells you about [niche/problem]:"
+  Body: numbered list — "1. ... 2. ... 3. ..." — product solves one
 
-Script 8 — Framework: "Real Talk"
-  Hook MUST start with: "Real talk —"
-  Body format: admit something honest or slightly negative about the niche/product → turn it into a reason the product is still worth it
-  Voiceover style: candid, conversational, no hype
+Script 6 — "Stop Doing This" | Arc G | Declarative opener
+  Hook starts: "Stop [specific wrong behavior]."
+  Body: cost of wrong behavior → product as the right way
 
-Script 9 — Framework: "If You're Lazy Like Me"
-  Hook MUST start with: "If you're lazy like me,"
-  Body format: relatable low-effort framing → product as the easy shortcut → specific result with minimal effort
-  Voiceover style: self-deprecating humor, warm
+Script 7 — "Quick Hack" | Arc H | Imperative opener
+  Hook starts: "Here's a [niche] hack that actually works:"
+  Body: step format — "Step 1: ... Step 2: ... Step 3: ..."
 
-Script 10 — Framework: "Take This As A Sign"
-  Hook MUST start with: "Take this as a sign to"
-  Body format: motivational push → product as the vehicle for the change → one vivid outcome
-  Voiceover style: inspiring, slightly emotional
+Script 8 — "Real Talk" | Arc B | Question opener
+  Hook starts: "Real talk —"
+  Body: honest admission → why product is still worth it
 
-IMPORTANT: Every script's voiceover must be completely different in structure from all others. No two voiceovers should have the same opening paragraph or the same flow. Each must be a complete, ready-to-read script of 150-200 words.
+Script 9 — "If You're Lazy Like Me" | Arc I | Contrast opener
+  Hook starts: "If you're lazy like me,"
+  Body: low-effort framing → product as easy shortcut → results
 
-- pinterestPins: exactly 5 pins
-- influencerPrompts: exactly 5 prompts tailored to the ${selectedPersona} persona
-- emails: exactly 3 emails
-- sms: exactly 3 messages
-- landingPage.headlines: exactly 5 headlines
-- landingPage.emailSubjects: exactly 5 subject lines
-- Use "AFFILIATE_LINK" as the placeholder for the affiliate URL
-- Make EVERYTHING specific to this product — no generic placeholders`;
+Script 10 — "Take This As A Sign" | Arc E | Number/list opener
+  Hook starts: "Take this as a sign to"
+  Body: motivational push → product as vehicle → vivid outcome
+
+Each voiceover must be 120-160 words, complete and ready to read on camera, and structurally unlike every other voiceover in this set.
+
+pinterestPins: exactly 5, each targeting a different keyword angle
+influencerPrompts: exactly 5, tailored to the ${selectedPersona} persona
+emails: exactly 3, each at a different funnel stage (awareness / consideration / urgency)
+sms: exactly 3, each a different type (curiosity / social proof / urgency)
+landingPage.headlines: exactly 5
+landingPage.emailSubjects: exactly 5
+
+Use "AFFILIATE_LINK" as the placeholder. Make everything specific to this product — zero generic placeholders.`;
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-6",
