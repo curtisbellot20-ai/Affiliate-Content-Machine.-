@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
+import { getAnthropicClient } from "@/lib/anthropicClient";
 
 export async function POST(request) {
   try {
     const { scriptIndex, framework, product, niche, audience, tone, persona, platforms } = await request.json();
 
-    if (!process.env.ANTHROPIC_API_KEY) {
+    let client;
+    try {
+      client = await getAnthropicClient();
+    } catch {
       return NextResponse.json({ error: "No API key configured" }, { status: 500 });
     }
-
-    const Anthropic = (await import("@anthropic-ai/sdk")).default;
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
     const platform = Array.isArray(platforms) ? platforms[0] : (platforms || "TikTok");
 
@@ -49,11 +50,18 @@ Make it specific to this product. Match the ${persona} voice and ${tone} tone. N
       messages: [{ role: "user", content: prompt }],
     });
 
-    const text = message.content[0].text.trim();
+    const textBlock = message.content?.find((b) => b.type === "text");
+    if (!textBlock?.text) throw new Error("No text content in API response.");
+
+    const text = textBlock.text.trim();
     const jsonStart = text.indexOf("{");
     const jsonEnd = text.lastIndexOf("}");
-    const script = JSON.parse(text.slice(jsonStart, jsonEnd + 1));
 
+    if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) {
+      throw new Error("API response did not contain valid JSON.");
+    }
+
+    const script = JSON.parse(text.slice(jsonStart, jsonEnd + 1));
     return NextResponse.json({ script });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
