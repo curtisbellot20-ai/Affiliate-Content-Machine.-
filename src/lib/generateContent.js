@@ -1,30 +1,4 @@
-const FRAMEWORKS = [
-  "I Wish I Knew This Sooner",
-  "Stop Doing This",
-  "3 Things Nobody Tells You",
-  "POV Hook",
-  "Before vs After",
-  "I Tested It So You Don't Have To",
-  "Hidden Gem",
-  "Don't Buy Until You See This",
-  "This Feels Illegal",
-  "You're Making This Mistake",
-  "What Nobody Shows You",
-  "Quick Hack",
-  "I Tried Everything",
-  "This Shouldn't Work But It Does",
-  "If You're Lazy Like Me",
-  "The Shortcut",
-  "Real Talk",
-  "This Changed My Routine",
-  "I Almost Gatekept This",
-  "Warning",
-  "This Is Why You're Stuck",
-  "Underrated",
-  "Simple Upgrade",
-  "Take This As A Sign",
-  "You Don't Need More Info",
-];
+import { FRAMEWORKS } from "@/lib/constants";
 
 const PERSONA_VOICES = {
   "Best Friend": "casual, warm, enthusiastic — like texting a friend: 'omg you HAVE to try this'",
@@ -127,8 +101,8 @@ const FALLBACK = {
 export async function generateContent({ product, niche, audience, tone, platforms, persona }) {
   if (!process.env.ANTHROPIC_API_KEY) return FALLBACK;
 
-  const Anthropic = (await import("@anthropic-ai/sdk")).default;
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const { getAnthropicClient } = await import("@/lib/anthropicClient");
+  const client = await getAnthropicClient();
 
   const reviewsText = (product?.reviews || []).length > 0
     ? product.reviews.map((r, i) =>
@@ -136,7 +110,6 @@ export async function generateContent({ product, niche, audience, tone, platform
       ).join("\n\n")
     : "No reviews available.";
 
-  // platforms is an array; use first entry as primary platform for script style
   const platformList = Array.isArray(platforms) && platforms.length > 0 ? platforms : ["TikTok"];
   const selectedPlatform = platformList[0];
   const selectedPersona = persona || "Best Friend";
@@ -301,13 +274,24 @@ IMPORTANT: Every script's voiceover must be completely different in structure fr
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 16000,
+    max_tokens: 8192,
     messages: [{ role: "user", content: prompt }],
   });
 
-  const text = message.content[0].text.trim();
+  if (message.stop_reason === "max_tokens") {
+    throw new Error("Content generation was cut short — output too long. Try selecting fewer platforms.");
+  }
+
+  const textBlock = message.content?.find((b) => b.type === "text");
+  if (!textBlock?.text) throw new Error("No text content in API response.");
+
+  const text = textBlock.text.trim();
   const jsonStart = text.indexOf("{");
   const jsonEnd = text.lastIndexOf("}");
-  const parsed = JSON.parse(text.slice(jsonStart, jsonEnd + 1));
-  return parsed;
+
+  if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) {
+    throw new Error("API response did not contain valid JSON.");
+  }
+
+  return JSON.parse(text.slice(jsonStart, jsonEnd + 1));
 }
