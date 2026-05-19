@@ -5,12 +5,11 @@ import Link from "next/link";
 const W = 1080;
 const H = 1920;
 const DURATION = 28;
+const FPS = 30;
 
-// Phase boundaries (fraction of total duration)
-const P_INTRO_END    = 0.11;  // 0-3s
-const P_HOOK_END     = 0.39;  // 3-11s
-const P_SHOWCASE_END = 0.75;  // 11-21s
-// cta: 21-28s
+const P_INTRO_END    = 0.11;
+const P_HOOK_END     = 0.39;
+const P_SHOWCASE_END = 0.75;
 
 function drawRoundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -58,21 +57,18 @@ function drawProductImage(ctx, img, x, y, size) {
 function drawFrame(ctx, elapsed, script, productImgs, productTitle) {
   const progress = Math.min(elapsed / DURATION, 1);
 
-  // Background
   const bg = ctx.createLinearGradient(0, 0, 0, H);
   bg.addColorStop(0, "#0a0a0f");
   bg.addColorStop(1, "#13131a");
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  // Purple glow
   const glow = ctx.createRadialGradient(W / 2, H * 0.35, 0, W / 2, H * 0.35, W * 0.7);
   glow.addColorStop(0, "rgba(108,99,255,0.18)");
   glow.addColorStop(1, "rgba(108,99,255,0)");
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
 
-  // Progress bar
   ctx.fillStyle = "rgba(255,255,255,0.08)";
   ctx.fillRect(0, H - 10, W, 10);
   ctx.fillStyle = "#6c63ff";
@@ -82,7 +78,6 @@ function drawFrame(ctx, elapsed, script, productImgs, productTitle) {
   const imgs = productImgs || [];
   const hasImgs = imgs.length > 0;
 
-  // ── INTRO ──
   if (progress < P_INTRO_END) {
     const t = ease(progress / P_INTRO_END);
     ctx.globalAlpha = t;
@@ -103,25 +98,18 @@ function drawFrame(ctx, elapsed, script, productImgs, productTitle) {
     return;
   }
 
-  // ── HOOK ── image[0] + hook text
   if (progress < P_HOOK_END) {
     const t = ease((progress - P_INTRO_END) / 0.08);
     ctx.globalAlpha = t;
-
     const imgSize = 660;
     const imgX = (W - imgSize) / 2;
     const imgY = H * 0.07;
-
-    if (hasImgs) {
-      drawProductImage(ctx, imgs[0], imgX, imgY, imgSize);
-    }
-
+    if (hasImgs) drawProductImage(ctx, imgs[0], imgX, imgY, imgSize);
     const textY = hasImgs ? H * 0.50 : H * 0.22;
     ctx.font = "700 34px -apple-system, sans-serif";
     ctx.fillStyle = "#6c63ff";
     ctx.textAlign = "center";
     ctx.fillText("🎯  HOOK", W / 2, textY);
-
     ctx.font = "700 60px -apple-system, sans-serif";
     ctx.fillStyle = "#f0f0f8";
     drawWrappedText(ctx, script.hook, W / 2, textY + 58, W - 160, 76);
@@ -129,25 +117,20 @@ function drawFrame(ctx, elapsed, script, productImgs, productTitle) {
     return;
   }
 
-  // ── SHOWCASE ── cycle through images with body text bullet points
   if (progress < P_SHOWCASE_END) {
     const phaseProgress = (progress - P_HOOK_END) / (P_SHOWCASE_END - P_HOOK_END);
     const t = ease(phaseProgress / 0.12);
     ctx.globalAlpha = t;
-
     const showcaseImgs = imgs.length > 1 ? imgs.slice(1) : imgs;
     const secsInPhase = phaseProgress * (DURATION * (P_SHOWCASE_END - P_HOOK_END));
     const imgIdx = Math.min(Math.floor(secsInPhase / 2), showcaseImgs.length - 1);
     const currentImg = showcaseImgs[imgIdx] || imgs[0];
-
-    // Thumbnail strip at top
     const thumbSize = 120;
     const thumbGap = 16;
     const thumbCount = Math.min(showcaseImgs.length, 5);
     const stripW = thumbCount * thumbSize + (thumbCount - 1) * thumbGap;
     const stripX = (W - stripW) / 2;
     const stripY = H * 0.05;
-
     showcaseImgs.slice(0, 5).forEach((img, i) => {
       const tx = stripX + i * (thumbSize + thumbGap);
       const isActive = i === imgIdx;
@@ -165,66 +148,50 @@ function drawFrame(ctx, elapsed, script, productImgs, productTitle) {
         ctx.stroke();
       }
     });
-
-    // Main image
     const mainSize = 620;
     const mainX = (W - mainSize) / 2;
     const mainY = stripY + thumbSize + 24;
     drawProductImage(ctx, currentImg, mainX, mainY, mainSize);
-
-    // Body text
     ctx.font = "700 32px -apple-system, sans-serif";
     ctx.fillStyle = "#6c63ff";
     ctx.textAlign = "center";
     ctx.fillText("💡  THE DETAILS", W / 2, mainY + mainSize + 50);
-
     ctx.fillStyle = "rgba(108,99,255,0.4)";
     ctx.fillRect(W / 2 - 60, mainY + mainSize + 72, 120, 3);
-
     ctx.font = "400 48px -apple-system, sans-serif";
     ctx.fillStyle = "rgba(240,240,248,0.9)";
     drawWrappedText(ctx, script.body, W / 2, mainY + mainSize + 95, W - 160, 64);
-
     ctx.globalAlpha = 1;
     return;
   }
 
-  // ── CTA ── first image + CTA text
   {
     const t = ease((progress - P_SHOWCASE_END) / 0.08);
     ctx.globalAlpha = t;
-
     const ctaGlow = ctx.createLinearGradient(0, H * 0.25, 0, H * 0.85);
     ctaGlow.addColorStop(0, "rgba(108,99,255,0.22)");
     ctaGlow.addColorStop(1, "rgba(108,99,255,0)");
     ctx.fillStyle = ctaGlow;
     ctx.fillRect(0, H * 0.25, W, H * 0.6);
-
     if (hasImgs) {
       const ctaImg = imgs[imgs.length - 1] || imgs[0];
       const imgSize = 520;
       drawProductImage(ctx, ctaImg, (W - imgSize) / 2, H * 0.08, imgSize);
     }
-
     ctx.font = "80px -apple-system, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText("🔥", W / 2, H * 0.53);
-
     ctx.font = "bold 64px -apple-system, sans-serif";
     ctx.fillStyle = "#6c63ff";
     ctx.fillText("DON'T MISS OUT", W / 2, H * 0.61);
-
     ctx.fillStyle = "rgba(108,99,255,0.4)";
     ctx.fillRect(W / 2 - 80, H * 0.627, 160, 3);
-
     ctx.font = "400 52px -apple-system, sans-serif";
     ctx.fillStyle = "#f0f0f8";
     drawWrappedText(ctx, script.cta, W / 2, H * 0.65, W - 160, 68);
-
     ctx.font = "700 48px -apple-system, sans-serif";
     ctx.fillStyle = "rgba(139,133,255,0.9)";
     ctx.fillText("👆 Link in bio", W / 2, H * 0.87);
-
     ctx.globalAlpha = 1;
   }
 }
@@ -238,7 +205,7 @@ export default function VideoPage() {
   const [loadedImgCount, setLoadedImgCount] = useState(0);
   const [genError, setGenError] = useState("");
   const canvasRef = useRef(null);
-  const rafRef = useRef(null);
+  const intervalRef = useRef(null);
   const recorderRef = useRef(null);
 
   useEffect(() => {
@@ -263,9 +230,7 @@ export default function VideoPage() {
 
       const rawUrls = (campaign.product?.images?.length > 0
         ? campaign.product.images
-        : campaign.product?.image
-          ? [campaign.product.image]
-          : []
+        : campaign.product?.image ? [campaign.product.image] : []
       ).slice(0, 6);
 
       const productImgs = await Promise.all(
@@ -276,7 +241,7 @@ export default function VideoPage() {
             img.onload = () => { setLoadedImgCount((n) => n + 1); resolve(img); };
             img.onerror = () => resolve(null);
             img.src = src;
-            setTimeout(() => resolve(null), 5000);
+            setTimeout(() => resolve(null), 8000);
           })
         )
       );
@@ -286,13 +251,11 @@ export default function VideoPage() {
 
       const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
         ? "video/webm;codecs=vp9"
-        : MediaRecorder.isTypeSupported("video/webm")
-          ? "video/webm"
-          : "";
+        : MediaRecorder.isTypeSupported("video/webm") ? "video/webm" : "";
 
       if (!mimeType) throw new Error("No supported video format found in this browser. Try Chrome or Edge.");
 
-      const stream = canvas.captureStream(30);
+      const stream = canvas.captureStream(FPS);
       const recorder = new MediaRecorder(stream, { mimeType });
       recorderRef.current = recorder;
       const chunks = [];
@@ -302,6 +265,12 @@ export default function VideoPage() {
         setStatus("idle");
       };
       recorder.onstop = () => {
+        const totalSize = chunks.reduce((s, c) => s + c.size, 0);
+        if (totalSize === 0) {
+          setGenError("Recording produced an empty file. Stay on this tab while generating and try again.");
+          setStatus("idle");
+          return;
+        }
         const blob = new Blob(chunks, { type: "video/webm" });
         setVideoUrl(URL.createObjectURL(blob));
         setStatus("done");
@@ -309,19 +278,20 @@ export default function VideoPage() {
 
       recorder.start(100);
       const start = Date.now();
+      const scriptData = { ...script, body: script.voiceover || script.body };
 
-      function animate() {
+      // Use setInterval instead of requestAnimationFrame so frames keep
+      // rendering even when the tab is backgrounded or throttled.
+      intervalRef.current = setInterval(() => {
         const elapsed = (Date.now() - start) / 1000;
         setProgress(Math.min(elapsed / DURATION, 1));
-        drawFrame(ctx, elapsed, { ...script, body: script.voiceover || script.body }, validImgs, campaign.product?.title);
-
-        if (elapsed < DURATION) {
-          rafRef.current = requestAnimationFrame(animate);
-        } else {
+        drawFrame(ctx, elapsed, scriptData, validImgs, campaign.product?.title);
+        if (elapsed >= DURATION) {
+          clearInterval(intervalRef.current);
           recorder.stop();
         }
-      }
-      animate();
+      }, 1000 / FPS);
+
     } catch (err) {
       setGenError(err.message || "Video generation failed. Please try again.");
       setStatus("idle");
@@ -329,7 +299,7 @@ export default function VideoPage() {
   }
 
   function cancel() {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    if (intervalRef.current) clearInterval(intervalRef.current);
     if (recorderRef.current?.state === "recording") recorderRef.current.stop();
     setStatus("idle");
     setProgress(0);
@@ -370,25 +340,17 @@ export default function VideoPage() {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 40, alignItems: "start" }}>
-          {/* Controls */}
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             <div>
-              <label style={{ display: "block", fontWeight: 600, marginBottom: 10, fontSize: 14 }}>
-                1. Pick a script
-              </label>
+              <label style={{ display: "block", fontWeight: 600, marginBottom: 10, fontSize: 14 }}>1. Pick a script</label>
               <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 320, overflowY: "auto" }}>
                 {campaign.videoScripts?.map((s, i) => (
                   <button key={i} onClick={() => { setSelected(i); setVideoUrl(null); setStatus("idle"); }} style={{
-                    padding: "11px 16px",
-                    borderRadius: 8,
+                    padding: "11px 16px", borderRadius: 8,
                     border: `1px solid ${selected === i ? "var(--accent)" : "var(--border)"}`,
                     background: selected === i ? "var(--accent-dim)" : "var(--bg-card)",
                     color: selected === i ? "var(--accent-light)" : "var(--text-muted)",
-                    textAlign: "left",
-                    cursor: "pointer",
-                    fontSize: 14,
-                    fontWeight: 500,
-                    transition: "all 0.15s",
+                    textAlign: "left", cursor: "pointer", fontSize: 14, fontWeight: 500, transition: "all 0.15s",
                   }}>
                     <span style={{ opacity: 0.5, marginRight: 8 }}>#{i + 1}</span>{s.title}
                   </button>
@@ -432,6 +394,7 @@ export default function VideoPage() {
                     </div>
                     <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 8 }}>{Math.round(progress * 100)}%</div>
                   </div>
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", textAlign: "center", margin: 0 }}>Keep this tab active while recording</p>
                   <button onClick={cancel} className="btn btn-secondary" style={{ fontSize: 13 }}>Cancel</button>
                 </div>
               )}
@@ -440,9 +403,7 @@ export default function VideoPage() {
                   <a href={videoUrl} download={`video-script-${selected + 1}.webm`} className="btn btn-primary" style={{ textDecoration: "none", fontSize: 15, padding: "14px 28px", justifyContent: "center" }}>
                     ⬇ Download Video (.webm)
                   </a>
-                  <button onClick={() => { setStatus("idle"); setVideoUrl(null); }} className="btn btn-secondary" style={{ fontSize: 13 }}>
-                    Generate another
-                  </button>
+                  <button onClick={() => { setStatus("idle"); setVideoUrl(null); }} className="btn btn-secondary" style={{ fontSize: 13 }}>Generate another</button>
                 </div>
               )}
             </div>
@@ -454,7 +415,6 @@ export default function VideoPage() {
             )}
           </div>
 
-          {/* Canvas preview */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>9:16 Preview</div>
             <div style={{ width: 240, height: 427, background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden", position: "relative", flexShrink: 0 }}>
